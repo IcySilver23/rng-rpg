@@ -48,7 +48,8 @@ const DEF_STATE={
     petLevels:{}, // {petId: level}
     expeditions:[], // [{petId,type,startTime,duration,reward}]
     maxExpeditions:2,
-    autoSellBelow:'none', // 'none','common','uncommon','rare'
+    autoSellBelow:'none', // legacy, replaced by autoSellRarities
+    autoSellRarities:{}, // {common:true, uncommon:true, ...}
     towerRewardsClaimed:[],
     seasonalActive:true,
     lastSave:Date.now(),

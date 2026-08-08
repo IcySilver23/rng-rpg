@@ -557,6 +557,7 @@ const SHOP=[
 {id:'multi_roll',name:'Multi Roll',desc:'Roll multiple (+1/lv)',max:9,base:1500,mult:2.5,cur:'gold'},
 {id:'auto_battle',name:'Auto Battle',desc:'Unlock auto-fight',max:1,base:3000,mult:1,cur:'gold'},
 {id:'inv_slots',name:'Inventory+',desc:'+10 aura slots/lv',max:15,base:400,mult:1.8,cur:'gold'},
+{id:'auto_sell_unlock',name:'Auto Sell',desc:'Unlock auto-selling',max:1,base:5000,mult:1,cur:'gold'},
 ];
 
 const REBIRTH_REQS=[{lv:25,gold:50000},{lv:35,gold:200000},{lv:45,gold:1000000},{lv:55,gold:5e6},{lv:65,gold:25e6},{lv:80,gold:100e6},{lv:95,gold:500e6},{lv:110,gold:2e9}];

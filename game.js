@@ -60,7 +60,6 @@ function setupEvents(){
     document.getElementById('btn-sell-confirm').addEventListener('click',doSellConfirm);
     document.getElementById('btn-sell-all').addEventListener('click',()=>{const r=document.getElementById('sell-all-filter').value;if(confirm(`Sell ALL ${r} auras (not equipped) for dust?`))doSellAll();});
     document.getElementById('btn-sell-cancel').addEventListener('click',()=>{selectedSell=null;renderSellPanel();});
-    document.getElementById('auto-sell-select').addEventListener('change',e=>{setAutoSell(e.target.value);});
     document.getElementById('daily-grid').addEventListener('click',claimDaily);
     document.getElementById('btn-ascend')?.addEventListener('click',doAscend);
     // Minigames

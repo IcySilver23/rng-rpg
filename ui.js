@@ -295,6 +295,7 @@ function renderShop(){
             else if(item.id==='auto_battle')preview='Unlocks auto-fight';
             else if(item.id==='aura_slots')preview=`${getAuraSlots()} → ${getAuraSlots()+1} slots`;
             else if(item.id==='inv_slots')preview=`Inv: ${getInvCapacity()} → ${getInvCapacity()+10}`;
+            else if(item.id==='auto_sell_unlock')preview='Unlocks auto-sell feature';
         }
         g.innerHTML+=`<div class="shop-card"><h4>${item.name}</h4><div class="shop-desc">${item.desc}</div><div class="shop-level">Lv${lv}/${item.max}</div>${preview?`<div class="shop-preview">${preview}</div>`:''}<div class="shop-cost">${mx?'MAX':`${ci}${fmt(cost)}`}</div><button class="shop-btn" ${!ok||mx?'disabled':''} data-s="${item.id}">${mx?'MAX':'Buy'}</button></div>`;
     }
@@ -706,22 +707,37 @@ function collectExpedition(idx){
 }
 
 // === AUTO-SELL ===
-function setAutoSell(level){
-    S.autoSellBelow=level;toast(`Auto-sell: ${level==='none'?'OFF':'below '+level}`);save();
+function setAutoSell(level){S.autoSellBelow=level;save();}
+function toggleAutoSellRarity(rarity){
+    if(!uLvl('auto_sell_unlock')){toast('Buy "Auto Sell" from Shop first!');return;}
+    if(!S.autoSellRarities)S.autoSellRarities={};
+    S.autoSellRarities[rarity]=!S.autoSellRarities[rarity];save();renderAutoSellCheckboxes();
 }
 function tryAutoSell(auraId){
-    if(S.autoSellBelow==='none')return;
+    if(!uLvl('auto_sell_unlock'))return;
+    if(!S.autoSellRarities)return;
     const a=AURAS.find(x=>x.id===auraId);if(!a)return;
-    const threshold=ri(S.autoSellBelow);
-    if(ri(a.rarity)<=threshold){
-        // Auto sell the last added entry (no modifier)
-        const entries=S.auras[auraId];if(!entries||!entries.length)return;
-        const idx=entries.length-1;
-        if(S.equippedAuras.some(e=>e.id===auraId&&e.mod===entries[idx].mod))return;
-        let dv=SELL_VAL[a.rarity]||1;
-        if(entries[idx].mod){const m=MODIFIERS.find(x=>x.id===entries[idx].mod);if(m)dv*=m.pMult;}
-        entries.splice(idx,1);if(!entries.length)delete S.auras[auraId];
-        S.dust+=Math.floor(dv);S.totalDust+=Math.floor(dv);
+    if(!S.autoSellRarities[a.rarity])return;
+    const entries=S.auras[auraId];if(!entries||!entries.length)return;
+    const idx=entries.length-1;
+    if(S.equippedAuras.some(e=>e.id===auraId&&e.mod===entries[idx].mod))return;
+    let dv=SELL_VAL[a.rarity]||1;
+    if(entries[idx].mod){const m=MODIFIERS.find(x=>x.id===entries[idx].mod);if(m)dv*=m.pMult;}
+    dv=Math.floor(dv*getEventBonus('sellMult'));
+    entries.splice(idx,1);if(!entries.length)delete S.auras[auraId];
+    S.dust+=dv;S.totalDust+=dv;
+}
+function renderAutoSellCheckboxes(){
+    const container=document.getElementById('auto-sell-checkboxes');if(!container)return;
+    const lock=document.getElementById('auto-sell-lock');
+    if(!uLvl('auto_sell_unlock')){container.innerHTML='<span style="font-size:.68rem;color:var(--dim)">🔒 Buy from Shop to unlock</span>';if(lock)lock.textContent='(Locked)';return;}
+    if(lock)lock.textContent='(Active)';
+    container.innerHTML='';
+    const rarities=['common','uncommon','rare','epic','legendary','mythic','divine','cosmic'];
+    for(const r of rarities){
+        const checked=(S.autoSellRarities&&S.autoSellRarities[r])?'checked':'';
+        const color=getRarity(r).color;
+        container.innerHTML+=`<label style="font-size:.68rem;display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" ${checked} onchange="toggleAutoSellRarity('${r}')" style="accent-color:${color}"><span style="color:${color}">${getRarity(r).name}</span></label>`;
     }
 }
 

@@ -614,6 +614,7 @@ function renderSellPanel(){
         actions.style.display='block';
         document.getElementById('sell-preview').innerHTML=`Sell 1x <strong>${a.name}</strong>${selectedSell.mod?' ['+selectedSell.mod+']':''} for <strong>${selectedSell.dustVal}✨</strong> dust?`;
     } else {actions.style.display='none';}
+    renderAutoSellCheckboxes();
 }
 
 function doSellConfirm(){

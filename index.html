@@ -76,12 +76,6 @@
                     <button class="btn-roll" id="btn-roll">🎲 Roll</button>
                     <button class="btn-roll btn-auto" id="btn-auto-roll">⚡ Auto</button>
                 </div>
-                <div class="auto-sell-row">
-                    <span>Auto-Sell:</span>
-                    <select id="auto-sell-select">
-                        <option value="none">OFF</option><option value="common">Common</option><option value="uncommon">≤Uncommon</option><option value="rare">≤Rare</option>
-                    </select>
-                </div>
                 <div class="luck-bar-container"><div class="luck-bar-fill" id="luck-bar-fill" style="width:0%"></div></div>
                 <div class="lucky-countdown" id="lucky-countdown"></div>
                 <div class="roll-log" id="roll-log"></div>
@@ -299,6 +293,11 @@
                         <select id="sell-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option></select>
                         <button class="btn-sm btn-danger" id="btn-sell-all">💰 Sell All</button>
                     </div>
+                </div>
+                <div style="margin:12px 0;padding:10px;background:var(--bg3);border-radius:var(--rs)">
+                    <h4 style="margin-bottom:6px">⚙️ Auto-Sell <span id="auto-sell-lock" style="font-size:.65rem;color:var(--dim)"></span></h4>
+                    <p style="font-size:.68rem;color:var(--dim);margin-bottom:8px">Automatically sell rolled auras of checked rarities for dust.</p>
+                    <div id="auto-sell-checkboxes" style="display:flex;flex-wrap:wrap;gap:6px"></div>
                 </div>
                 <div class="sell-grid" id="sell-grid"></div>
                 <div class="sell-actions" id="sell-actions" style="display:none">
