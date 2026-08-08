@@ -78,6 +78,7 @@ function doRoll(auto){
     // Visual effects
     addRollLog(bestAura,bestRarity,bestMod);
     if(ri(bestRarity)>=ri('legendary'))screenFlash(getRarity(bestRarity).color);
+    if(bestMod){const modData=MODIFIERS.find(m=>m.id===bestMod);screenFlash(modData.color);sfxSuccess();toast(`✨ MODIFIER: ${modData.name}! (${modData.pMult}x Power)`);}
     updateLuckBar();
     if(auto){showResult(bestAura,bestMod,bestRarity,null);if(ri(bestRarity)>=ri('mythic')&&getSetting('celebration'))showCelebration(bestAura,bestMod,bestRarity);}
     else{
@@ -96,13 +97,18 @@ function animateReel(resultAura,mod,rarity,bonus){
     const resultDisp=document.getElementById('roll-result-display');
     container.style.display='block';resultDisp.style.display='none';
 
-    // Build reel items: 20 random + result at end
+    // Build reel items: 20 random before + result + 5 random after
     const items=[];
     for(let i=0;i<20;i++){
         const randAura=AURAS[Math.floor(Math.random()*AURAS.length)];
         items.push(randAura);
     }
+    const resultIdx=items.length;
     items.push(resultAura);
+    for(let i=0;i<5;i++){
+        const randAura=AURAS[Math.floor(Math.random()*AURAS.length)];
+        items.push(randAura);
+    }
 
     reel.innerHTML='';
     for(const a of items){
@@ -110,11 +116,10 @@ function animateReel(resultAura,mod,rarity,bonus){
         reel.innerHTML+=`<div class="reel-item" style="border-bottom:2px solid ${r.color}"><span class="ri-icon">${a.icon}</span><span class="ri-name" style="color:${r.color}">${a.name}</span></div>`;
     }
 
-    // Animate: scroll to end
+    // Animate: scroll so result lands at center
     const itemWidth=90;
-    const totalWidth=items.length*itemWidth;
     const centerOffset=container.offsetWidth/2-itemWidth/2;
-    const finalPos=-(totalWidth-itemWidth-centerOffset);
+    const finalPos=-(resultIdx*itemWidth-centerOffset);
 
     reel.style.transition='none';
     reel.style.transform=`translateX(${centerOffset}px)`;
@@ -163,10 +168,11 @@ function showMultiResults(results){
     container.style.display='none';disp.style.display='block';
     disp.className='roll-result-display';
     let html=`<div style="font-size:.75rem;color:var(--sub);margin-bottom:8px;text-align:center">Rolled x${results.length}</div><div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">`;
-    for(const res of results){
+    for(let i=0;i<results.length;i++){
+        const res=results[i];
         const a=res.aura;const r=getRarity(a.rarity);const m=res.mod?MODIFIERS.find(x=>x.id===res.mod):null;
         const pw=getAuraPower(a.id,res.mod);
-        html+=`<div style="background:var(--bg3);border:2px solid ${r.color};border-radius:8px;padding:8px 6px;text-align:center;min-width:80px;max-width:100px">
+        html+=`<div class="multi-roll-card" style="background:var(--bg3);border:2px solid ${r.color};border-radius:8px;padding:8px 6px;text-align:center;min-width:80px;max-width:100px;animation:multiCardPop .4s ease ${i*0.1}s both">
             <div style="font-size:1.5rem">${a.icon}</div>
             <div style="font-size:.6rem;font-weight:600;color:${r.color};margin-top:2px">${a.name}</div>
             <div style="font-size:.55rem;color:var(--dim)">${r.name}</div>

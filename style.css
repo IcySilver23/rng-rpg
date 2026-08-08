@@ -536,3 +536,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 /* INDEX SUB-TABS */
 .idx-tab{padding:5px 10px;border:1px solid var(--border);background:var(--bg2);color:var(--sub);border-radius:14px;font-size:.7rem;cursor:pointer;transition:all .2s}
 .idx-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* MULTI-ROLL CARD ANIMATION */
+@keyframes multiCardPop{0%{opacity:0;transform:scale(0.3) rotateZ(-5deg)}60%{transform:scale(1.1) rotateZ(1deg)}100%{opacity:1;transform:scale(1) rotateZ(0deg)}}

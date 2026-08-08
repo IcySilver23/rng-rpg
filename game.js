@@ -100,7 +100,7 @@ function setupEvents(){
     document.getElementById('import-input').addEventListener('keydown',e=>{if(e.key==='Enter'){try{JSON.parse(e.target.value);localStorage.setItem('rng4',e.target.value);location.reload();}catch(err){toast('Invalid save data!');}}});
 }
 function periodic(){
-    updateRes();renderSkills();checkNotifications();renderBoosts();updateLuckBar();updateLuckyCountdown();checkEventExpiry();renderEventBanner();
+    updateRes();renderSkills();checkNotifications();renderBoosts();updateLuckBar();updateLuckyCountdown();checkEventExpiry();renderEventBanner();checkQuests();
     if(document.getElementById('subpanel-potions')?.classList.contains('active'))renderPotions();
     if(document.getElementById('subpanel-eggs')?.classList.contains('active'))renderEggs();
     if(document.getElementById('subpanel-dungeon')?.classList.contains('active')&&!dgRun)renderDungeons();

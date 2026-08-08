@@ -268,16 +268,25 @@ function handleOffline(){
 // === NOTIFICATIONS ===
 function checkNotifications(){
     if(!getSetting('notifications')){document.querySelectorAll('.tab-dot').forEach(d=>d.style.display='none');return;}
-    const badges={collection:false,store:false,battle:false,workshop:false};
+    const badges={collection:false,store:false,battle:false,workshop:false,progress:false};
     // Egg ready?
     for(const sl of S.eggSlots){if(Date.now()-sl.start>=sl.dur){badges.collection=true;break;}}
     // Expedition ready?
     for(const exp of S.expeditions){if(Date.now()-exp.startTime>=exp.duration){badges.collection=true;break;}}
+    // Index milestones claimable?
+    if(!badges.collection){
+        const auraCount=Object.keys(S.auras).length;const petCount=Object.keys(S.pets).length;const gearCount=Object.keys(S.gear).length;
+        for(const ms of COLLECTION_MILESTONES){if(auraCount>=ms.count&&!(S.collectionMilestonesClaimed||[]).includes(ms.count)){badges.collection=true;break;}}
+        if(!badges.collection)for(const ms of PET_MILESTONES){if(petCount>=ms.count&&!(S.petMilestonesClaimed||[]).includes(ms.count)){badges.collection=true;break;}}
+        if(!badges.collection)for(const ms of GEAR_MILESTONES){if(gearCount>=ms.count&&!(S.gearMilestonesClaimed||[]).includes(ms.count)){badges.collection=true;break;}}
+    }
     // Daily available?
     const today=Math.floor(Date.now()/86400000);const lastDay=Math.floor((S.lastDaily||0)/86400000);
     if(today>lastDay||!S.lastDaily)badges.store=true;
     // Dungeon off cooldown?
     for(const d of DUNGEONS){if(getTotalPower()>=d.reqPower&&Date.now()>=(S.dungeonCds[d.id]||0)){badges.battle=true;break;}}
+    // Quest ready to claim?
+    if(S.questReady)badges.progress=true;
     // Apply badges
     document.querySelectorAll('.tab').forEach(tab=>{
         const t=tab.dataset.tab;let dot=tab.querySelector('.tab-dot');
