@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNG RPG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Tutorial Overlay -->
+<div id="tutorial-overlay" style="display:none">
+    <div class="tut-backdrop" id="tut-backdrop"></div>
+    <div class="tut-tooltip" id="tut-tooltip"></div>
+</div>
+
+<!-- Splash Screen -->
+<div id="splash" style="position:fixed;inset:0;background:#0a0a12;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s">
+    <div style="text-align:center">
+        <div style="font-size:3rem;margin-bottom:10px">🎲</div>
+        <div style="font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">RNG RPG</div>
+        <div style="color:#6a6a8a;font-size:.8rem;margin-top:6px">Loading...</div>
+    </div>
+</div>
+<!-- Tooltip -->
+<div id="tooltip" style="display:none"></div>
+<div id="app">
+    <header id="top-bar">
+        <div class="top-left">
+            <div class="game-title">RNG RPG</div>
+            <div class="player-bar">
+                <span class="player-level" id="player-level">Lv.1</span>
+                <div class="xp-bar-mini"><div class="xp-fill-mini" id="xp-fill-mini"></div></div>
+                <span class="rebirth-badge" id="rebirth-badge" style="display:none">R0</span>
+            </div>
+        </div>
+        <div class="resources-bar">
+            <div class="resource"><span class="res-icon">🪙</span><span class="res-amount" data-res="gold">0</span></div>
+            <div class="resource"><span class="res-icon">💎</span><span class="res-amount" data-res="gems">0</span></div>
+            <div class="resource"><span class="res-icon">✨</span><span class="res-amount" data-res="dust">0</span></div>
+            <div class="resource"><span class="res-icon">🍀</span><span class="res-amount" data-res="luck">1.0x</span></div>
+        </div>
+        <button class="settings-btn" id="btn-open-settings">⚙️</button>
+    </header>
+    <div class="rap-bar">RAP: <strong id="rap-value">0</strong> | Power: <strong id="header-power">0</strong></div>
+    <div class="server-announce" id="server-announce"></div>
+    <div class="event-banner" id="event-banner" style="display:none"></div>
+    <div class="boosts-bar" id="boosts-bar"></div>
+
+    <nav id="tab-bar">
+        <button class="tab active" data-tab="roll">🎲 Roll</button>
+        <button class="tab" data-tab="character">👤 Character</button>
+        <button class="tab" data-tab="battle">⚔️ Battle</button>
+        <button class="tab" data-tab="collection">🎒 Collection</button>
+        <button class="tab" data-tab="workshop">🔮 Workshop</button>
+        <button class="tab" data-tab="minigames">🎮 Games</button>
+        <button class="tab" data-tab="store">🛒 Store</button>
+        <button class="tab" data-tab="progress">📊 Progress</button>
+    </nav>
+
+    <main id="content">
+        <!-- === ROLL TAB === -->
+        <section class="panel active" id="panel-roll">
+            <div class="roll-stats-bar">
+                <span>🍀 <strong id="roll-luck">1.0x</strong></span>
+                <span>🎲 <strong id="roll-total">0</strong></span>
+                <span>Pity: <strong id="roll-pity">0</strong>/<span id="pity-max">100</span></span>
+                <span>Dry: <strong id="roll-dry">0</strong></span>
+                <span>Best: <strong id="roll-best">None</strong></span>
+            </div>
+            <div class="lucky-aura-banner" id="lucky-banner" style="display:none"></div>
+            <div class="roll-pool-select"><label>Pool:</label><select id="roll-zone-select"></select></div>
+            <div class="roll-area">
+                <div class="roll-reel-container" id="roll-reel-container"><div class="roll-reel" id="roll-reel"></div><div class="roll-pointer"></div></div>
+                <div class="roll-result-display" id="roll-result-display" style="display:none"></div>
+                <div class="roll-buttons">
+                    <button class="btn-roll" id="btn-roll">🎲 Roll</button>
+                    <button class="btn-roll btn-auto" id="btn-auto-roll">⚡ Auto</button>
+                </div>
+                <div class="auto-sell-row">
+                    <span>Auto-Sell:</span>
+                    <select id="auto-sell-select">
+                        <option value="none">OFF</option><option value="common">Common</option><option value="uncommon">≤Uncommon</option><option value="rare">≤Rare</option>
+                    </select>
+                </div>
+                <div class="luck-bar-container"><div class="luck-bar-fill" id="luck-bar-fill" style="width:0%"></div></div>
+                <div class="lucky-countdown" id="lucky-countdown"></div>
+                <div class="roll-log" id="roll-log"></div>
+            </div>
+            <div class="section-divider"></div>
+            <div class="sub-section">
+                <div class="sub-header" onclick="toggleSection('odds-section')">📊 Drop Rates <span class="toggle-arrow">▼</span></div>
+                <div class="sub-content" id="odds-section" style="display:none"><div id="odds-table"></div></div>
+            </div>
+        </section>
+
+        <!-- === CHARACTER TAB === -->
+        <section class="panel" id="panel-character">
+            <div class="char-layout">
+                <div class="char-avatar" id="char-avatar">
+                    <pre class="char-art" id="char-art"></pre>
+                </div>
+                <div class="char-info">
+                    <div class="char-title" id="char-title-display" style="font-size:.7rem;color:var(--legendary);margin-bottom:2px"></div>
+                    <div class="char-name" id="char-name">Adventurer</div>
+                    <div class="char-level" id="char-level-display"></div>
+                    <div class="char-xp-bar"><div class="char-xp-fill" id="char-xp-fill"></div></div>
+                    <div class="char-xp-text" id="char-xp-text"></div>
+                </div>
+            </div>
+            <div class="char-stats-grid" id="char-stats-grid"></div>
+            <div class="char-equipped-section">
+                <h4>Equipped Auras (<span id="char-aura-slots">1</span> slots)</h4>
+                <div class="char-equipped-row" id="char-equipped-auras"></div>
+            </div>
+            <div class="char-equipped-section">
+                <h4>Equipped Gear (3 slots)</h4>
+                <div class="char-equipped-row" id="char-equipped-gear"></div>
+            </div>
+            <div class="char-equipped-section">
+                <h4>Active Pets (3 slots)</h4>
+                <div class="char-equipped-row" id="char-equipped-pets"></div>
+            </div>
+            <div class="char-equipped-section">
+                <h4>Active Effects</h4>
+                <div class="char-effects" id="char-effects"></div>
+            </div>
+            <div class="char-equipped-section">
+                <h4>🏷️ Titles (click to equip)</h4>
+                <div class="char-titles" id="char-titles" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+            <div class="char-equipped-section">
+                <h4>📚 Collection Milestones</h4>
+                <div id="char-milestones" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+        </section>
+
+        <!-- === BATTLE TAB === -->
+        <section class="panel" id="panel-battle">
+            <div class="sub-tabs">
+                <button class="sub-tab active" data-subtab="combat">⚔️ Combat</button>
+                <button class="sub-tab" data-subtab="tower">🗼 Tower</button>
+                <button class="sub-tab" data-subtab="dungeon">🏰 Dungeon</button>
+                <button class="sub-tab" data-subtab="worldboss">👹 World Boss</button>
+            </div>
+            <!-- Combat -->
+            <div class="sub-panel active" id="subpanel-combat">
+                <div class="combat-zone-info" id="combat-zone-info"></div>
+                <div class="zone-select-row"><label>Zone:</label><select id="combat-zone-select"></select></div>
+                <div class="combat-area">
+                    <div class="combat-enemy"><div class="enemy-name" id="enemy-name">No enemy</div>
+                        <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="enemy-hp-fill"></div></div>
+                        <div class="enemy-hp-text" id="enemy-hp-text"></div></div>
+                    <div class="skills-bar" id="skills-bar"></div>
+                    <div class="combat-player"><div class="player-stats">
+                        <span>⚔️<strong id="player-dmg">0</strong></span>
+                        <span>❤️<strong id="player-hp">100/100</strong></span>
+                        <span>🛡️<strong id="player-def">0</strong></span></div>
+                        <div class="player-hp-bar"><div class="player-hp-fill" id="player-hp-fill"></div></div></div>
+                    <div class="combat-buttons">
+                        <button class="btn-fight" id="btn-fight">⚔️ Fight</button>
+                        <button class="btn-fight btn-auto-fight" id="btn-auto-fight">⚡ Auto</button></div>
+                    <div class="combat-log" id="combat-log"></div>
+                </div>
+            </div>
+            <!-- Tower -->
+            <div class="sub-panel" id="subpanel-tower">
+                <div class="tower-info" id="tower-info"></div>
+                <div class="tower-enemy" id="tower-enemy"></div>
+                <button class="btn-fight" id="btn-tower-fight">⚔️ Challenge</button>
+            </div>
+            <!-- Dungeon -->
+            <div class="sub-panel" id="subpanel-dungeon">
+                <div class="dungeon-list" id="dungeon-list"></div>
+                <div class="dungeon-run" id="dungeon-run" style="display:none">
+                    <div class="dg-run-header" id="dg-run-header"></div>
+                    <div class="dg-room" id="dg-room"></div>
+                    <div class="dg-run-log" id="dg-run-log"></div>
+                </div>
+            </div>
+            <!-- World Boss -->
+            <div class="sub-panel" id="subpanel-worldboss">
+                <div class="wb-status" id="wb-status"></div>
+                <div class="wb-arena" id="wb-arena" style="display:none">
+                    <div class="wb-boss-display" id="wb-boss-display"></div>
+                    <div class="wb-hp-bar"><div class="wb-hp-fill" id="wb-hp-fill"></div></div>
+                    <div class="wb-hp-text" id="wb-hp-text"></div>
+                    <div class="wb-phase" id="wb-phase"></div>
+                    <div class="wb-timer" id="wb-timer"></div>
+                    <div class="wb-stats" id="wb-stats"></div>
+                    <div class="wb-buttons">
+                        <button class="btn-fight" id="btn-wb-attack">⚔️ Attack</button>
+                        <button class="btn-fight btn-auto-fight" id="btn-wb-auto">⚡ Auto</button>
+                    </div>
+                    <div class="wb-milestones" id="wb-milestones"></div>
+                    <div class="wb-log" id="wb-log"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- === COLLECTION TAB === -->
+        <section class="panel" id="panel-collection">
+            <div class="sub-tabs">
+                <button class="sub-tab active" data-subtab="auras">Auras</button>
+                <button class="sub-tab" data-subtab="gear">Gear</button>
+                <button class="sub-tab" data-subtab="pets">Pets</button>
+                <button class="sub-tab" data-subtab="eggs">Eggs</button>
+                <button class="sub-tab" data-subtab="idx">📖 Index</button>
+            </div>
+            <div class="equipped-bar">
+                <span>Auras: <strong id="equipped-auras-display">0/1</strong></span>
+                <span>| Gear: <strong id="equipped-gear-count">0/3</strong></span>
+                <span>| Pets: <strong id="active-pets">0/3</strong></span>
+                <span>| Pwr: <strong id="total-power">0</strong></span>
+                <span>| Inv: <strong id="inv-count">0/25</strong></span>
+            </div>
+            <div class="sub-panel active" id="subpanel-auras"><div class="inventory-grid" id="inventory-grid"></div></div>
+            <div class="sub-panel" id="subpanel-gear"><div class="inventory-grid" id="inv-gear"></div></div>
+            <div class="sub-panel" id="subpanel-pets">
+                <div class="inventory-grid" id="inv-pets"></div>
+                <div style="margin-top:12px"><h4>🧭 Expeditions</h4><div id="expedition-active"></div><div id="expedition-send"></div></div>
+            </div>
+            <div class="sub-panel" id="subpanel-eggs">
+                <div class="egg-slots" id="egg-slots"></div>
+                <h4>Buy Eggs</h4><div id="egg-shop-grid"></div>
+            </div>
+            <div class="sub-panel" id="subpanel-idx">
+                <div class="sub-tabs" style="margin-bottom:8px">
+                    <button class="idx-tab active" data-idxtab="aura-idx">Auras</button>
+                    <button class="idx-tab" data-idxtab="pet-idx">Pets</button>
+                    <button class="idx-tab" data-idxtab="gear-idx">Gear</button>
+                </div>
+                <div class="index-filters" id="index-filters"></div>
+                <p class="panel-subtitle" id="index-progress">0/0</p>
+                <div class="index-grid" id="index-grid"></div>
+            </div>
+            <div style="font-size:.6rem;color:var(--dim);margin-top:8px">Left-click = equip | Right-click = unequip | Craft & Sell in Workshop</div>
+        </section>
+
+        <!-- === WORKSHOP TAB === -->
+        <section class="panel" id="panel-workshop">
+            <div class="sub-tabs">
+                <button class="sub-tab active" data-subtab="enchanting">🔮 Enchant</button>
+                <button class="sub-tab" data-subtab="crafting">⚒️ Craft</button>
+                <button class="sub-tab" data-subtab="selling">💰 Sell</button>
+                <button class="sub-tab" data-subtab="petlevel">🐾 Pet Level</button>
+                <button class="sub-tab" data-subtab="potions">🧪 Potions</button>
+            </div>
+            <div class="sub-panel active" id="subpanel-enchanting">
+                <div class="enchant-resources"><span>✨ <strong id="ench-dust">0</strong></span><span>🔮 Stones: <strong id="ench-stones">0</strong></span></div>
+                <h4>Select Gear</h4><div class="enchant-gear-grid" id="enchant-gear-grid"></div>
+                <div class="enchant-workshop" id="enchant-workshop" style="display:none">
+                    <div class="enchant-selected" id="enchant-selected-info"></div>
+                    <div class="enchant-slots-display" id="enchant-slots-display"></div>
+                    <div class="enchant-tier-select"><label>Tier:</label><select id="enchant-tier-select">
+                        <option value="0">Normal (90%)</option><option value="1">Magic (70%)</option><option value="2">Rare (50%)</option><option value="3">Epic (30%)</option><option value="4">Legendary (10%)</option>
+                    </select></div>
+                    <div class="enchant-cost" id="enchant-cost-display"></div>
+                    <div class="enchant-buttons"><button class="btn-sm" id="btn-enchant">🔮 Enchant</button><button class="btn-sm" id="btn-enchant-stone">🔮 Stone</button><button class="btn-sm" id="btn-reroll">🔄 Reroll</button><button class="btn-sm btn-danger" id="btn-clear-enchants">🗑️ Clear</button></div>
+                    <div class="enchant-log" id="enchant-log"></div>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-crafting">
+                <div class="craft-header">
+                    <p>Combine <strong>3 identical auras</strong> (same aura + same modifier) to create <strong>1 aura of the next rarity</strong>.</p>
+                    <div class="bulk-actions">
+                        <label>Craft All:</label>
+                        <select id="craft-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option></select>
+                        <button class="btn-sm" id="btn-craft-all">⚒️ Craft All</button>
+                    </div>
+                </div>
+                <div class="craft-select-area">
+                    <h4>Select Aura to Craft</h4>
+                    <div class="craft-grid" id="craft-grid"></div>
+                </div>
+                <div class="craft-preview" id="craft-preview" style="display:none">
+                    <div class="craft-from" id="craft-from"></div>
+                    <div class="craft-arrow">→</div>
+                    <div class="craft-to" id="craft-to"></div>
+                    <button class="btn-roll" id="btn-craft-confirm">⚒️ Craft!</button>
+                </div>
+                <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+                    <h4>🔀 Aura Fusion (500✨)</h4>
+                    <p style="font-size:.72rem;color:var(--sub);margin-bottom:8px">Combine 2 different auras → creates a unique <strong>hybrid</strong> with BOTH abilities! Hybrids can't be rolled.</p>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                        <select id="fusion-aura1" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:.72rem"></select>
+                        <span>+</span>
+                        <select id="fusion-aura2" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:5px;font-size:.72rem"></select>
+                        <button class="btn-sm" id="btn-fuse">🔀 Fuse!</button>
+                    </div>
+                </div>
+                <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+                    <h4>⬆️ Gear Upgrade (3 copies → +1 level)</h4>
+                    <p style="font-size:.72rem;color:var(--sub);margin-bottom:8px">Each level adds +20% power. Max +5.</p>
+                    <div id="gear-upgrade-grid" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-selling">
+                <div class="sell-header">
+                    <p>Sell auras for <strong>✨ Dust</strong>. Modifiers multiply the sell value. Equipped auras cannot be sold.</p>
+                    <div class="sell-dust-display">Your Dust: <strong id="sell-dust-amount">0</strong> ✨</div>
+                    <div class="bulk-actions">
+                        <label>Sell All:</label>
+                        <select id="sell-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option></select>
+                        <button class="btn-sm btn-danger" id="btn-sell-all">💰 Sell All</button>
+                    </div>
+                </div>
+                <div class="sell-grid" id="sell-grid"></div>
+                <div class="sell-actions" id="sell-actions" style="display:none">
+                    <div class="sell-preview" id="sell-preview"></div>
+                    <button class="btn-sm btn-danger" id="btn-sell-confirm">💰 Sell Selected</button>
+                    <button class="btn-sm" id="btn-sell-cancel">Cancel</button>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-petlevel">
+                <div style="padding:10px;background:var(--bg2);border-radius:var(--rs);margin-bottom:12px;font-size:.78rem;color:var(--sub)">
+                    <p>Feed duplicate pets to level them up. Each level gives <strong>+25% bonus</strong>. Costs 1 dupe per level.</p>
+                </div>
+                <div class="inventory-grid" id="pet-level-grid"></div>
+            </div>
+            <div class="sub-panel" id="subpanel-potions">
+                <div class="active-potions" id="active-potions"></div>
+                <div class="potion-grid" id="potion-grid"></div>
+            </div>
+        </section>
+
+        <!-- === MINIGAMES TAB === -->
+        <section class="panel" id="panel-minigames">
+            <div class="sub-tabs">
+                <button class="sub-tab active" data-subtab="memory">🧠 Memory</button>
+                <button class="sub-tab" data-subtab="frenzy">👆 Frenzy</button>
+                <button class="sub-tab" data-subtab="guess">🎯 Guess</button>
+            </div>
+            <div class="sub-panel active" id="subpanel-memory">
+                <div class="minigame-container">
+                    <h4>Memory Match</h4>
+                    <p style="font-size:.72rem;color:var(--sub);margin-bottom:8px">Match aura pairs to win dust & gems!</p>
+                    <div class="memory-grid" id="memory-grid" style="grid-template-columns:repeat(4,1fr)"></div>
+                    <button class="btn-sm" id="btn-memory-start">▶️ New Game (4 pairs)</button>
+                    <div id="memory-result" style="margin-top:8px;font-size:.82rem"></div>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-frenzy">
+                <div class="minigame-container">
+                    <h4>Click Frenzy</h4>
+                    <p style="font-size:.72rem;color:var(--sub);margin-bottom:8px">Click as fast as you can in 10 seconds!</p>
+                    <div class="frenzy-area">
+                        <div class="frenzy-target" id="frenzy-target" style="display:none">👆</div>
+                        <div id="frenzy-counter" style="font-size:2rem;font-weight:800;margin:8px 0">0</div>
+                        <div id="frenzy-timer" style="font-size:.85rem;color:var(--sub)"></div>
+                    </div>
+                    <button class="btn-sm" id="btn-frenzy-start">▶️ Start!</button>
+                    <div id="frenzy-result" style="margin-top:8px;font-size:.82rem"></div>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-guess">
+                <div class="minigame-container">
+                    <h4>Lucky Guess</h4>
+                    <p style="font-size:.72rem;color:var(--sub);margin-bottom:8px">Will your next roll be Rare or above? Bet on it!</p>
+                    <div style="font-size:1.5rem;margin:12px 0" id="guess-display">🤔</div>
+                    <div style="display:flex;gap:8px;justify-content:center">
+                        <button class="btn-sm" id="btn-guess-yes">✅ Yes (Rare+)</button>
+                        <button class="btn-sm" id="btn-guess-no">❌ No (Below Rare)</button>
+                    </div>
+                    <div id="guess-result" style="margin-top:10px;font-size:.85rem"></div>
+                    <div style="font-size:.68rem;color:var(--dim);margin-top:6px">Win: 2x bet | Lose: lose bet | Bet: 100 gold</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- === STORE TAB === -->
+        <section class="panel" id="panel-store">
+            <div class="sub-tabs">
+                <button class="sub-tab active" data-subtab="upgrades">🛒 Upgrades</button>
+                <button class="sub-tab" data-subtab="trade">🏪 Trade</button>
+                <button class="sub-tab" data-subtab="daily">📅 Daily</button>
+            </div>
+            <div class="sub-panel active" id="subpanel-upgrades"><div class="shop-grid" id="shop-grid"></div></div>
+            <div class="sub-panel" id="subpanel-trade">
+                <p class="panel-subtitle" id="trade-timer"></p>
+                <div class="inventory-grid" id="trade-grid"></div>
+            </div>
+            <div class="sub-panel" id="subpanel-daily">
+                <div class="daily-streak" id="daily-streak"></div>
+                <div class="daily-grid" id="daily-grid"></div>
+                <div style="margin-top:16px"><h4>Redeem Code</h4>
+                    <div class="code-input-row"><input type="text" id="code-input" placeholder="Code..."><button class="btn-sm" id="btn-redeem">Redeem</button></div></div>
+            </div>
+        </section>
+
+        <!-- === PROGRESS TAB === -->
+        <section class="panel" id="panel-progress">
+            <div class="sub-tabs">
+                <button class="sub-tab active" data-subtab="quests-sub">📜 Quests</button>
+                <button class="sub-tab" data-subtab="achievements-sub">🏅 Achieve</button>
+                <button class="sub-tab" data-subtab="wheel-sub">🎰 Wheel</button>
+                <button class="sub-tab" data-subtab="hall-sub">🏆 Hall</button>
+                <button class="sub-tab" data-subtab="rebirth-sub">🔄 Rebirth</button>
+                <button class="sub-tab" data-subtab="stats-sub">📊 Stats</button>
+            </div>
+            <div class="sub-panel active" id="subpanel-quests-sub"><div class="quest-list" id="quest-list"></div></div>
+            <div class="sub-panel" id="subpanel-achievements-sub"><div class="achievements-grid" id="achievements-grid"></div></div>
+            <div class="sub-panel" id="subpanel-wheel-sub">
+                <div style="text-align:center;padding:16px">
+                    <div class="wheel-container">
+                        <div class="wheel" id="wheel"></div>
+                        <div class="wheel-pointer-arrow">▼</div>
+                    </div>
+                    <p style="font-size:.82rem;color:var(--sub);margin:10px 0">25 💎 per spin</p>
+                    <button class="btn-roll" id="btn-spin-wheel">🎰 Spin!</button>
+                    <div id="wheel-result" style="margin-top:12px;font-size:1rem;font-weight:700;min-height:24px"></div>
+                    <div style="margin-top:8px;font-size:.7rem;color:var(--dim)">Total spins: <span id="wheel-spins">0</span></div>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-hall-sub">
+                <div id="hall-of-fame-list" style="display:flex;flex-direction:column;gap:6px"></div>
+            </div>
+            <div class="sub-panel" id="subpanel-rebirth-sub">
+                <div class="rebirth-info" id="rebirth-info"></div><div class="rebirth-bonuses" id="rebirth-bonuses"></div>
+                <button class="btn-rebirth" id="btn-rebirth">🔄 Rebirth</button>
+                <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+                    <h4>⭐ Ascension</h4><div class="rebirth-info" id="ascension-info" style="margin-top:8px"></div>
+                    <button class="btn-rebirth" id="btn-ascend" style="background:linear-gradient(135deg,#7c3aed,#ec4899);margin-top:8px">⭐ Ascend</button>
+                </div>
+            </div>
+            <div class="sub-panel" id="subpanel-stats-sub">
+                <div class="stats-grid" id="stats-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal" style="display:none">
+        <div class="modal-content settings-modal-content">
+            <h3>⚙️ Settings</h3>
+            <div class="settings-section-modal">
+                <h4>Audio & Visual</h4>
+                <label class="setting-row"><input type="checkbox" id="set-sound" checked> 🔊 Sound Effects</label>
+                <label class="setting-row"><input type="checkbox" id="set-anim" checked> 🎬 Roll Animation</label>
+                <label class="setting-row"><input type="checkbox" id="set-notif" checked> 🔔 Tab Notifications</label>
+                <label class="setting-row"><input type="checkbox" id="set-celebration" checked> 🎉 Celebration Screen (Mythic+)</label>
+                <label class="setting-row"><input type="checkbox" id="set-shake" checked> 📳 Screen Shake</label>
+            </div>
+            <div class="settings-section-modal">
+                <h4>Gameplay</h4>
+                <label class="setting-row"><input type="checkbox" id="set-autosave" checked> 💾 Auto-Save (15s)</label>
+                <label class="setting-row"><input type="checkbox" id="set-toasts" checked> 💬 Toast Notifications</label>
+                <label class="setting-row"><input type="checkbox" id="set-confirm-sell" checked> ⚠️ Confirm before selling</label>
+            </div>
+            <div class="settings-section-modal">
+                <h4>Data</h4>
+                <div class="settings-data-row">
+                    <button class="btn-sm" id="btn-save-now">💾 Save Now</button>
+                    <button class="btn-sm" id="btn-export">📋 Export Save</button>
+                    <button class="btn-sm" id="btn-import">📥 Import Save</button>
+                </div>
+                <input type="text" id="import-input" placeholder="Paste save data here..." style="display:none;width:100%;margin-top:6px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:6px;font-size:.72rem">
+                <div class="settings-data-row" style="margin-top:8px">
+                    <button class="btn-sm btn-danger" id="btn-reset-game">🗑️ Reset ALL Data</button>
+                </div>
+                <div class="save-info" id="save-info"></div>
+            </div>
+            <button class="btn-modal-close" id="btn-close-settings">Close</button>
+        </div>
+    </div>
+
+    <!-- Overlays -->
+    <div class="celebration-overlay" id="celebration" style="display:none">
+        <div class="celebration-content" id="celebration-content"></div>
+        <button class="btn-modal-close" id="btn-close-celebration">Nice!</button>
+    </div>
+    <div class="modal" id="offline-modal" style="display:none">
+        <div class="modal-content"><h3>Welcome Back!</h3><p id="offline-time"></p><div id="offline-gains"></div>
+            <button class="btn-modal-close" id="btn-close-offline">Collect</button></div>
+    </div>
+    <div id="toast-container"></div>
+</div>
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="systems.js"></script>
+<script src="ui.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
