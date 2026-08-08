@@ -464,9 +464,13 @@ const POTIONS=[
 
 // === DAILY REWARDS ===
 const DAILY_REWARDS=[
-{day:1,reward:{gold:200}},{day:2,reward:{gems:10}},{day:3,reward:{dust:50}},
-{day:4,reward:{gold:500}},{day:5,reward:{gems:25}},{day:6,reward:{dust:150}},
-{day:7,reward:{gems:100,dust:200}},
+{day:1,reward:{gold:1000,gems:5}},
+{day:2,reward:{gold:2000,dust:100}},
+{day:3,reward:{gems:20,dust:200}},
+{day:4,reward:{gold:5000,gems:15,dust:300}},
+{day:5,reward:{gems:40,dust:500,enchantStones:1}},
+{day:6,reward:{gold:10000,gems:50,dust:1000}},
+{day:7,reward:{gems:150,dust:3000,enchantStones:3}},
 ];
 
 // === CODES ===

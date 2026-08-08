@@ -351,13 +351,14 @@ function claimDaily(){
     if(today<=lastDay&&S.lastDaily>0){toast('Already claimed today!');return;}
     // Advance streak
     if(today-lastDay<=2&&S.lastDaily>0)S.dailyStreak++;else S.dailyStreak=0;
-    const day=S.dailyStreak%7;
+    // Day 7+ always gives day 7 rewards
+    const day=Math.min(S.dailyStreak,6);
     const reward=DAILY_REWARDS[day].reward;
     for(const[r,v]of Object.entries(reward))S[r]=(S[r]||0)+v;
     S.lastDaily=now;
     if(!S.dailyClaimed.includes(day))S.dailyClaimed.push(day);
     const rwStr=Object.entries(reward).map(([r,v])=>`+${v} ${r}`).join(', ');
-    toast(`Day ${day+1} reward: ${rwStr}`);
+    toast(`Day ${S.dailyStreak+1} reward: ${rwStr}`);
     renderDaily();updateRes();save();
 }
 
