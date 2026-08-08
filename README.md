@@ -6,7 +6,6 @@ A browser-based RNG RPG inspired by Roblox RNG games. Roll for auras, fight enem
 
 Open `index.html` in any modern browser. No server, no install, no dependencies. Everything saves to localStorage.
 
-**Live version:** [https://icysilver23.github.io/rng-rpg/](https://icysilver23.github.io/rng-rpg/)
 
 ## Features
 
