@@ -88,7 +88,7 @@ function renderCharacter(){
     // Title display
     const titleObj=TITLES.find(t=>t.id===(S.equippedTitle||'newbie'));
     document.getElementById('char-title-display').textContent=titleObj?`[ ${titleObj.name} ]`:'';
-    renderCharTitles();renderCharMilestones();
+    renderCharTitles();
 }
 
 function renderCombat(){updateCombat();renderEnemy();renderSkills();}

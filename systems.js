@@ -290,7 +290,7 @@ function useSkill(id){
         case'heal':const h=Math.floor(getMaxHp()*sk.val);S.hp=Math.min(getMaxHp(),S.hp+h);addLog(log,`+${fmt(h)}HP`,'log-heal');renderPHp();break;
         case'critB':S.critBurst=sk.val;addLog(log,`${sk.val} crits!`,'log-xp');break;
         case'goldB':S.goldBurstEnd=Date.now()+10000;addLog(log,'5x Gold 10s!','log-gold');break;
-        case'luckB':S.luckBurstEnd=Date.now()+30000;addLog(log,'3x Luck 30s!','log-xp');toast('3x Luck!');break;
+        case'luckB':S.luckBurstEnd=Date.now()+30000;S.luckBurstMult=3;addLog(log,'3x Luck 30s!','log-xp');toast('3x Luck!');break;
         case'nuke':if(curEnemy&&!curEnemy.boss){const g=Math.floor(curEnemy.gold*getGoldMult());S.gold+=g;S.totalGold+=g;S.killCount++;if(curEnemy.elite)S.eliteKills++;grantXp(curEnemy.xp);addLog(log,`💣NUKE +${fmt(g)}🪙`,'log-kill');curEnemy=null;curEnemyHp=0;setTimeout(spawnEnemy,200);}break;
     }
     renderEnemy();renderSkills();updateRes();save();
@@ -385,8 +385,8 @@ function redeemCode(){
     // Grant normal resources
     for(const[r,v]of Object.entries(reward)){if(r!=='used'&&r!=='special')S[r]=(S[r]||0)+v;}
     // Handle special effects
-    if(reward.special==='luck10x'){S.luckBurstEnd=Date.now()+600000;toast('🍀 10x Luck for 10 minutes!');}
-    else if(reward.special==='luck5x'){S.luckBurstEnd=Date.now()+300000;toast('🍀 5x Luck for 5 minutes!');}
+    if(reward.special==='luck10x'){S.luckBurstEnd=Date.now()+600000;S.luckBurstMult=10;toast('🍀 10x Luck for 10 minutes!');}
+    else if(reward.special==='luck5x'){S.luckBurstEnd=Date.now()+300000;S.luckBurstMult=5;toast('🍀 5x Luck for 5 minutes!');}
     else if(reward.special==='egg'){
         // Give a free legendary egg hatch
         const pid=EGG_TYPES[3].pool[Math.floor(Math.random()*EGG_TYPES[3].pool.length)];

@@ -179,7 +179,7 @@ function getLuck(){
     for(const gId of S.equippedGear)l+=getEnchantStat(gId,'luck');
     l*=(1+potionBonus('luck'));
     const sb=getSetBonus();if(sb&&sb.bonus.luck)l+=sb.bonus.luck;
-    if(Date.now()<S.luckBurstEnd)l*=3;
+    if(Date.now()<S.luckBurstEnd)l*=(S.luckBurstMult||3);
     // Lucky aura bonus
     if(S.luckyAura&&Date.now()<S.luckyEnd)l*=1.5;
     // Server event
@@ -336,7 +336,7 @@ function updateZoneTheme(){
 function renderBoosts(){
     const bar=document.getElementById('boosts-bar');if(!bar)return;bar.innerHTML='';
     const now=Date.now();
-    if(now<S.luckBurstEnd){const rem=Math.ceil((S.luckBurstEnd-now)/1000);bar.innerHTML+=`<div class="boost-pill luck">🍀 3x Luck (${Math.floor(rem/60)}:${(rem%60).toString().padStart(2,'0')})</div>`;}
+    if(now<S.luckBurstEnd){const rem=Math.ceil((S.luckBurstEnd-now)/1000);const mult=S.luckBurstMult||3;bar.innerHTML+=`<div class="boost-pill luck">🍀 ${mult}x Luck (${Math.floor(rem/60)}:${(rem%60).toString().padStart(2,'0')})</div>`;}
     if(now<S.goldBurstEnd){const rem=Math.ceil((S.goldBurstEnd-now)/1000);bar.innerHTML+=`<div class="boost-pill gold">🪙 5x Gold (${rem}s)</div>`;}
     S.potionEffects=(S.potionEffects||[]).filter(p=>p.endTime>now);
     for(const p of S.potionEffects){const rem=Math.ceil((p.endTime-now)/1000);bar.innerHTML+=`<div class="boost-pill potion">${p.type} ${p.value}x (${Math.floor(rem/60)}:${(rem%60).toString().padStart(2,'0')})</div>`;}
