@@ -135,6 +135,7 @@
             <!-- Combat -->
             <div class="sub-panel active" id="subpanel-combat">
                 <div class="combat-zone-info" id="combat-zone-info"></div>
+                <div class="combat-dps" id="combat-dps" style="font-size:.7rem;color:var(--glow);padding:2px 8px"></div>
                 <div class="zone-select-row"><label>Zone:</label><select id="combat-zone-select"></select></div>
                 <div class="combat-area">
                     <div class="combat-enemy"><div class="enemy-name" id="enemy-name">No enemy</div>
@@ -203,6 +204,14 @@
                 <span>| Pwr: <strong id="total-power">0</strong></span>
                 <span>| Inv: <strong id="inv-count">0/25</strong></span>
             </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;padding:4px 8px;align-items:center">
+                <label style="font-size:.68rem;color:var(--sub)">Sort:</label>
+                <select id="inv-sort-select" onchange="setInvSort(this.value)" style="font-size:.68rem;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:2px 4px">
+                    <option value="power">Power</option><option value="rarity">Rarity</option><option value="name">Name</option><option value="count">Count</option>
+                </select>
+                <button class="btn-sm" onclick="equipBestAll()" style="font-size:.62rem;padding:2px 6px">⬆️ Equip Best</button>
+                <button class="btn-sm" onclick="unequipAll()" style="font-size:.62rem;padding:2px 6px">⬇️ Unequip All</button>
+            </div>
             <div class="sub-panel active" id="subpanel-auras"><div class="inventory-grid" id="inventory-grid"></div></div>
             <div class="sub-panel" id="subpanel-gear"><div class="inventory-grid" id="inv-gear"></div></div>
             <div class="sub-panel" id="subpanel-pets">
@@ -254,8 +263,9 @@
                     <p>Combine <strong>3 identical auras</strong> (same aura + same modifier) to create <strong>1 aura of the next rarity</strong>.</p>
                     <div class="bulk-actions">
                         <label>Craft All:</label>
-                        <select id="craft-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option></select>
+                        <select id="craft-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option><option value="mythic">Mythic</option><option value="divine">Divine</option><option value="cosmic">Cosmic</option><option value="ethereal">Ethereal</option><option value="impossible">Impossible</option><option value="godly">Godly</option><option value="primordial">Primordial</option><option value="eternal">Eternal</option><option value="omega">Omega</option><option value="infinity">Infinity</option><option value="transcendent">Transcendent</option><option value="glitched">Glitched</option></select>
                         <button class="btn-sm" id="btn-craft-all">⚒️ Craft All</button>
+                        <button class="btn-sm" onclick="craftAllChain()" style="background:linear-gradient(135deg,var(--accent),#ec4899);color:#fff">⚒️ Chain All</button>
                     </div>
                 </div>
                 <div class="craft-select-area">
@@ -290,8 +300,14 @@
                     <div class="sell-dust-display">Your Dust: <strong id="sell-dust-amount">0</strong> ✨</div>
                     <div class="bulk-actions">
                         <label>Sell All:</label>
-                        <select id="sell-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option></select>
+                        <select id="sell-all-filter"><option value="common">Common</option><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option><option value="mythic">Mythic</option><option value="divine">Divine</option><option value="cosmic">Cosmic</option><option value="ethereal">Ethereal</option><option value="impossible">Impossible</option><option value="godly">Godly</option><option value="primordial">Primordial</option><option value="eternal">Eternal</option><option value="omega">Omega</option><option value="infinity">Infinity</option><option value="transcendent">Transcendent</option><option value="glitched">Glitched</option><option value="reality">Reality</option></select>
                         <button class="btn-sm btn-danger" id="btn-sell-all">💰 Sell All</button>
+                        <button class="btn-sm" onclick="if(confirm('Sell all duplicates of selected rarity, keeping 1 of each?'))sellAllKeepOne()">📦 Keep 1</button>
+                    </div>
+                    <div class="bulk-actions" style="margin-top:6px">
+                        <label>Sell Below:</label>
+                        <select id="sell-below-filter"><option value="uncommon">Uncommon</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option><option value="mythic">Mythic</option><option value="divine">Divine</option><option value="cosmic">Cosmic</option></select>
+                        <button class="btn-sm btn-danger" onclick="if(confirm('Sell ALL auras below '+document.getElementById('sell-below-filter').value+'?'))sellAllBelow(document.getElementById('sell-below-filter').value)">💰 Sell Below</button>
                     </div>
                 </div>
                 <div style="margin:12px 0;padding:10px;background:var(--bg3);border-radius:var(--rs)">
@@ -440,6 +456,8 @@
                 <label class="setting-row"><input type="checkbox" id="set-autosave" checked> 💾 Auto-Save (15s)</label>
                 <label class="setting-row"><input type="checkbox" id="set-toasts" checked> 💬 Toast Notifications</label>
                 <label class="setting-row"><input type="checkbox" id="set-confirm-sell" checked> ⚠️ Confirm before selling</label>
+                <label class="setting-row"><input type="checkbox" id="set-auto-hatch"> 🥚 Auto-hatch eggs when ready</label>
+                <label class="setting-row"><input type="checkbox" id="set-confirm-gems" checked> 💎 Confirm gem spending (25+)</label>
             </div>
             <div class="settings-section-modal">
                 <h4>Data</h4>

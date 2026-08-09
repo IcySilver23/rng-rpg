@@ -297,7 +297,7 @@ function checkNotifications(){
 }
 
 // === SETTINGS ===
-const DEF_SETTINGS={sound:true,animations:true,notifications:true,celebration:true,shake:true,autosave:true,toasts:true,confirmSell:true};
+const DEF_SETTINGS={sound:true,animations:true,notifications:true,celebration:true,shake:true,autosave:true,toasts:true,confirmSell:true,autoHatch:false,confirmGems:true};
 let SETTINGS=null;
 function loadSettings(){const s=localStorage.getItem('rng4_settings');SETTINGS=s?JSON.parse(s):{...DEF_SETTINGS};}
 function saveSettings(){localStorage.setItem('rng4_settings',JSON.stringify(SETTINGS));}

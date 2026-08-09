@@ -31,6 +31,7 @@ function setupEvents(){
     });
     document.getElementById('btn-spin-wheel')?.addEventListener('click',()=>{
         if(S.gems<WHEEL_COST){toast('Need 25 gems!');return;}
+        confirmGemSpend(WHEEL_COST,'Wheel Spin',()=>{
         const wheel=document.getElementById('wheel');const btn=document.getElementById('btn-spin-wheel');
         if(!wheel||btn.disabled)return;
         btn.disabled=true;
@@ -56,7 +57,7 @@ function setupEvents(){
             // Reset wheel after a moment
             setTimeout(()=>{wheel.style.transition='none';wheel.style.transform='rotate(0deg)';setTimeout(()=>{wheel.style.transition='transform 4s cubic-bezier(0.17,0.67,0.12,0.99)';},50);},1000);
         },4200);
-    });
+    });});
     document.getElementById('btn-sell-confirm').addEventListener('click',doSellConfirm);
     document.getElementById('btn-sell-all').addEventListener('click',()=>{const r=document.getElementById('sell-all-filter').value;if(confirm(`Sell ALL ${r} auras (not equipped) for dust?`))doSellAll();});
     document.getElementById('btn-sell-cancel').addEventListener('click',()=>{selectedSell=null;renderSellPanel();});
@@ -80,14 +81,16 @@ function setupEvents(){
         document.getElementById('set-autosave').checked=getSetting('autosave');
         document.getElementById('set-toasts').checked=getSetting('toasts');
         document.getElementById('set-confirm-sell').checked=getSetting('confirmSell');
+        document.getElementById('set-auto-hatch').checked=getSetting('autoHatch');
+        document.getElementById('set-confirm-gems').checked=getSetting('confirmGems');
         const saveTime=S.lastSave?new Date(S.lastSave).toLocaleString():'Never';
         document.getElementById('save-info').textContent=`Last save: ${saveTime}`;
     });
     document.getElementById('btn-close-settings').addEventListener('click',()=>{document.getElementById('settings-modal').style.display='none';});
     // Setting toggles
-    ['sound','anim','notif','celebration','shake','autosave','toasts','confirm-sell'].forEach(key=>{
+    ['sound','anim','notif','celebration','shake','autosave','toasts','confirm-sell','auto-hatch','confirm-gems'].forEach(key=>{
         const el=document.getElementById('set-'+key);if(el)el.addEventListener('change',e=>{
-            const k=key==='anim'?'animations':key==='notif'?'notifications':key==='confirm-sell'?'confirmSell':key;
+            const k=key==='anim'?'animations':key==='notif'?'notifications':key==='confirm-sell'?'confirmSell':key==='auto-hatch'?'autoHatch':key==='confirm-gems'?'confirmGems':key;
             SETTINGS[k]=e.target.checked;saveSettings();
             if(k==='notifications'&&!e.target.checked)document.querySelectorAll('.tab-dot').forEach(d=>d.style.display='none');
         });
@@ -99,12 +102,15 @@ function setupEvents(){
     document.getElementById('import-input').addEventListener('keydown',e=>{if(e.key==='Enter'){try{JSON.parse(e.target.value);localStorage.setItem('rng4',e.target.value);location.reload();}catch(err){toast('Invalid save data!');}}});
 }
 function periodic(){
-    updateRes();renderSkills();checkNotifications();renderBoosts();updateLuckBar();updateLuckyCountdown();checkEventExpiry();renderEventBanner();checkQuests();
+    updateRes();renderSkills();checkNotifications();renderBoosts();updateLuckBar();updateLuckyCountdown();checkEventExpiry();renderEventBanner();checkQuests();checkAutoHatch();
     if(document.getElementById('subpanel-potions')?.classList.contains('active'))renderPotions();
     if(document.getElementById('subpanel-eggs')?.classList.contains('active'))renderEggs();
     if(document.getElementById('subpanel-dungeon')?.classList.contains('active')&&!dgRun)renderDungeons();
     if(document.getElementById('subpanel-worldboss')?.classList.contains('active'))renderWorldBoss();
     if(S.luckyAura&&Date.now()>=S.luckyEnd){S.luckyAura=null;document.getElementById('lucky-banner').style.display='none';}
+    // Update DPS display
+    const dpsEl=document.getElementById('combat-dps');
+    if(dpsEl){const d=getDps();dpsEl.textContent=d.dps?`DPS: ${fmt(d.dps)} | Gold/min: ${fmt(d.gpm)}`:'';}
 }
 // === UI HELPERS ===
 function toggleSection(id){const el=document.getElementById(id);el.style.display=el.style.display==='none'?'block':'none';}

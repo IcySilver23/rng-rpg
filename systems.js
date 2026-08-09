@@ -10,6 +10,7 @@ function doRoll(auto){
     const count=auto?1:getMultiRollCount();
     let bestAura=null,bestMod=null,bestRarity='common',totalNew=0;
     const allResults=[];
+    trackSessionRoll();
 
     for(let roll=0;roll<count;roll++){
     const luck=getLuck();
@@ -56,7 +57,7 @@ function doRoll(auto){
     if(ri(rarity)>ri(S.bestRarity))S.bestRarity=rarity;
     addToHallOfFame(aura.id,mod,rarity);
     checkCollectionMilestones();checkTitles();
-    if(ri(rarity)>=ri('epic'))S.gems+=Math.max(1,Math.floor(getRarity(rarity).power/10));
+    if(ri(rarity)>=ri('epic'))S.gems+=Math.max(2,Math.floor(getRarity(rarity).power/8));
 
     // Double roll
     let bonus=null;
@@ -258,13 +259,14 @@ function doFight(){
     let d=getPlayerDmg(),crit=Math.random()<getCrit();
     if(S.critBurst>0){crit=true;S.critBurst--;}
     if(crit)d*=2;d=Math.floor(d*(0.85+Math.random()*0.3));
-    curEnemyHp-=d;addLog(log,`${fmt(d)}${crit?' CRIT!':''}`,crit?'log-drop':'log-hit');sfxHit();
+    curEnemyHp-=d;trackDps(d,0);addLog(log,`${fmt(d)}${crit?' CRIT!':''}`,crit?'log-drop':'log-hit');sfxHit();
     const ls=getLifesteal();if(ls>0)S.hp=Math.min(getMaxHp(),S.hp+Math.floor(d*ls));
     if(curEnemyHp<=0){
         const gB=Date.now()<S.goldBurstEnd?5:1;
         const gE=Math.floor(curEnemy.gold*getGoldMult()*gB);S.gold+=gE;S.totalGold+=gE;S.killCount++;
         if(curEnemy.elite)S.eliteKills++;
         if(curEnemy.boss)S.bossKills++;
+        trackDps(0,gE);trackSessionGold(gE);trackSessionKill();
         grantXp(curEnemy.xp);addLog(log,`${curEnemy.name}! +${fmt(gE)}🪙`,'log-kill');
         if(curEnemy.boss){const gb=Math.floor(gE/8);S.gems+=gb;if(!S.bossesDefeated.includes(curEnemy.name))S.bossesDefeated.push(curEnemy.name);addLog(log,`BOSS +${fmt(gb)}💎`,'log-drop');}
         let dr=ZONES[S.currentZone].gearDrop*getGearDrop();if(curEnemy.elite)dr*=2;
@@ -303,7 +305,7 @@ function useSkill(id){
 }
 
 // === EGGS ===
-function buyEgg(id){const e=EGG_TYPES.find(x=>x.id===id);if(!e)return;if(S.eggSlots.length>=S.maxEggs){toast('No slots!');return;}if(S[e.currency]<e.cost){toast('Not enough!');return;}S[e.currency]-=e.cost;S.eggSlots.push({type:e.id,start:Date.now(),dur:e.hatchTime*1000/getEggSpd()});toast(`${e.name} incubating!`);renderEggs();updateRes();save();}
+function buyEgg(id,bulk){const e=EGG_TYPES.find(x=>x.id===id);if(!e)return;if(bulk){let bought=0;while(S.eggSlots.length<S.maxEggs&&S[e.currency]>=e.cost){S[e.currency]-=e.cost;S.eggSlots.push({type:e.id,start:Date.now(),dur:e.hatchTime*1000/getEggSpd()});bought++;}if(bought)toast(`${bought}x ${e.name} incubating!`);else toast(S.eggSlots.length>=S.maxEggs?'No slots!':'Not enough!');} else {if(S.eggSlots.length>=S.maxEggs){toast('No slots!');return;}if(S[e.currency]<e.cost){toast('Not enough!');return;}S[e.currency]-=e.cost;S.eggSlots.push({type:e.id,start:Date.now(),dur:e.hatchTime*1000/getEggSpd()});toast(`${e.name} incubating!`);}renderEggs();updateRes();save();}
 function hatchEgg(i){const sl=S.eggSlots[i];if(!sl||Date.now()-sl.start<sl.dur){toast('Not ready!');return;}const e=EGG_TYPES.find(x=>x.id===sl.type);const pid=e.pool[Math.floor(Math.random()*e.pool.length)];const p=PETS.find(x=>x.id===pid);if(!S.pets[pid])S.pets[pid]=0;S.pets[pid]++;S.eggSlots.splice(i,1);toast(`Hatched: ${p.icon} ${p.name}!`);checkQuests();checkAch();renderEggs();renderInv();save();}
 function activatePet(pid){
     if(S.activePets.length>=3){toast('No room! Unequip first (right-click).');return;}
@@ -323,7 +325,7 @@ function dgHit(){if(!dgActive)return;let d=getPlayerDmg();if(Math.random()<getCr
 function renderDgState(){if(!dgActive)return;document.getElementById('dungeon-hp-fill').style.width=Math.max(0,(dgActive.hp/dgActive.max)*100)+'%';document.getElementById('dungeon-hp-text').textContent=`${fmt(Math.max(0,dgActive.hp))}/${fmt(dgActive.max)}`;}
 
 // === TOWER ===
-function getTowerEnemy(){const f=S.towerFloor;return{name:`Floor ${f} Guardian`,icon:'🗼',hp:Math.floor(100*Math.pow(1.5,f)),dmg:Math.floor(10*Math.pow(1.3,f)),gold:Math.floor(50*f),xp:Math.floor(30*f)};}
+function getTowerEnemy(){const f=S.towerFloor;return{name:`Floor ${f} Guardian`,icon:'🗼',hp:Math.floor(80*Math.pow(1.45,f)),dmg:Math.floor(8*Math.pow(1.28,f)),gold:Math.floor(30*Math.pow(1.35,f)),xp:Math.floor(20*Math.pow(1.3,f))};}
 function doTowerFight(){
     if(!isUnlocked('tower')){toast(`🔒 Tower unlocks at Lv.${UNLOCK_REQS.tower}`);return;}
     const enemy=getTowerEnemy();
@@ -451,7 +453,7 @@ function unequipGear(gId){
     if(idx>=0)S.equippedGear.splice(idx,1);
     renderInv();updateCombat();save();
 }
-function selectZone(i){const z=ZONES[i];if(i>0&&getTotalPower()<z.reqPower){toast(`Need ${fmt(z.reqPower)} power!`);return;}S.currentZone=i;curEnemy=null;curEnemyHp=0;spawnEnemy();renderZones();renderCombat();checkQuests();save();}
+function selectZone(i){const z=ZONES[i];if(i>0&&getTotalPower()<z.reqPower){toast(`Need ${fmt(z.reqPower)} power!`);return;}S.currentZone=i;curEnemy=null;curEnemyHp=0;resetDpsTracker();spawnEnemy();renderZones();renderCombat();checkQuests();save();}
 
 // === SHOP ===
 function buyUpgrade(id){const item=SHOP.find(x=>x.id===id);const lvl=uLvl(id);if(lvl>=item.max)return;const cost=uCost(item);if(S[item.cur]<cost){toast('Not enough!');return;}S[item.cur]-=cost;S.upgrades[id]=lvl+1;toast(`${item.name} Lv.${lvl+1}`);if((id==='roll_speed'||id==='auto_roll')&&autoRoll){clearInterval(autoRoll);autoRoll=setInterval(()=>doRoll(true),getAutoMs());}renderShop();updateRes();renderAll();save();}
@@ -465,7 +467,7 @@ function sellAura(auraId,mod){
     const a=AURAS.find(x=>x.id===auraId);let dv=SELL_VAL[a.rarity]||1;
     if(mod){const m=MODIFIERS.find(x=>x.id===mod);if(m)dv*=m.pMult;}
     dv=Math.floor(dv*getEventBonus('sellMult'));entries.splice(idx,1);if(!entries.length)delete S.auras[auraId];
-    S.dust+=dv;S.totalDust+=dv;toast(`+${dv}✨`);renderInv();updateRes();save();
+    S.dust+=dv;S.totalDust+=dv;trackSessionDust(dv);toast(`+${dv}✨`);renderInv();updateRes();save();
 }
 
 // === CRAFT ===
@@ -990,4 +992,228 @@ function endTutorial(){
         let p=el.parentElement;while(p&&p!==document.body){p.style.zIndex='';p=p.parentElement;}
     });
     S.tutorialDone=true;save();
+}
+
+// === QOL: EQUIP BEST / UNEQUIP ALL ===
+function equipBestAll(){
+    let msg=[];
+    // --- Auras ---
+    const auraSlots=getAuraSlots()-S.equippedAuras.length;
+    if(auraSlots>0){
+        const candidates=[];
+        for(const aId of Object.keys(S.auras)){
+            const entries=S.auras[aId];if(!entries)continue;
+            for(let i=0;i<entries.length;i++){
+                const isEq=S.equippedAuras.some(e=>e.id===aId&&e.mod===entries[i].mod);
+                if(!isEq)candidates.push({aId,idx:i,mod:entries[i].mod,power:getAuraPower(aId,entries[i].mod)});
+            }
+        }
+        candidates.sort((a,b)=>b.power-a.power);
+        let equipped=0;
+        for(const c of candidates){
+            if(equipped>=auraSlots)break;
+            S.equippedAuras.push({id:c.aId,mod:c.mod});
+            equipped++;
+        }
+        if(equipped)msg.push(`${equipped} aura${equipped>1?'s':''}`);
+    }
+    // --- Gear (accounts for duplicates) ---
+    const gearSlots=3-S.equippedGear.length;
+    if(gearSlots>0){
+        // Build list of all equippable gear copies
+        const owned=Object.keys(S.gear).filter(id=>S.gear[id]>0);
+        const gearCandidates=[];
+        for(const gId of owned){
+            const g=GEAR.find(x=>x.id===gId);if(!g)continue;
+            const eqCount=S.equippedGear.filter(x=>x===gId).length;
+            const available=S.gear[gId]-eqCount;
+            const power=g.power*getGearUpgradeMult(gId);
+            // Add one entry per available copy
+            for(let i=0;i<available;i++)gearCandidates.push({gId,power});
+        }
+        gearCandidates.sort((a,b)=>b.power-a.power);
+        let equipped=0;
+        for(const c of gearCandidates){
+            if(equipped>=gearSlots)break;
+            S.equippedGear.push(c.gId);
+            equipped++;
+        }
+        if(equipped)msg.push(`${equipped} gear`);
+    }
+    // --- Pets ---
+    const petSlots=3-S.activePets.length;
+    if(petSlots>0){
+        const owned=Object.keys(S.pets).filter(id=>S.pets[id]>0&&!S.activePets.includes(id));
+        const candidates=owned.map(id=>{const p=PETS.find(x=>x.id===id);return{id,rarity:ri(p.rarity)};});
+        candidates.sort((a,b)=>b.rarity-a.rarity);
+        let activated=0;
+        for(const c of candidates){
+            if(activated>=petSlots)break;
+            S.activePets.push(c.id);
+            activated++;
+        }
+        if(activated)msg.push(`${activated} pet${activated>1?'s':''}`);
+    }
+    if(msg.length)toast(`Equipped best: ${msg.join(', ')}!`);
+    else toast('All slots already full!');
+    renderInv();updateRes();updateCombat();save();
+}
+
+function unequipAll(){
+    if(!S.equippedAuras.length&&!S.equippedGear.length&&!S.activePets.length){toast('Nothing equipped!');return;}
+    S.equippedAuras=[];
+    S.equippedGear=[];
+    S.activePets=[];
+    toast('Everything unequipped.');
+    renderInv();updateRes();updateCombat();save();
+}
+
+// === QOL: INVENTORY SORT ===
+let invSortMode='power'; // power, rarity, name, count
+function setInvSort(mode){
+    invSortMode=mode;
+    renderInv();
+}
+
+// === QOL: SELL ALL BELOW RARITY / KEEP 1 ===
+function sellAllBelow(maxRarity){
+    let sold=0,dustGained=0;
+    for(const aId of Object.keys(S.auras)){
+        const a=AURAS.find(x=>x.id===aId);if(!a)continue;
+        if(ri(a.rarity)>=ri(maxRarity))continue; // skip this rarity and above
+        const entries=S.auras[aId];if(!entries)continue;
+        for(let i=entries.length-1;i>=0;i--){
+            const isEq=S.equippedAuras.some(e=>e.id===aId&&e.mod===entries[i].mod);
+            if(isEq)continue;
+            let dv=SELL_VAL[a.rarity]||1;
+            if(entries[i].mod){const m=MODIFIERS.find(x=>x.id===entries[i].mod);if(m)dv*=m.pMult;}
+            dv=Math.floor(dv);
+            entries.splice(i,1);
+            S.dust+=dv;S.totalDust+=dv;dustGained+=dv;sold++;
+        }
+        if(!entries.length)delete S.auras[aId];
+    }
+    if(sold)toast(`Sold ${sold} auras below ${getRarity(maxRarity).name} for ${fmt(dustGained)}✨!`);
+    else toast('Nothing to sell!');
+    renderSellPanel();updateRes();save();
+}
+
+function sellAllKeepOne(){
+    const filterRarity=document.getElementById('sell-all-filter').value;
+    let sold=0,dustGained=0;
+    for(const aId of Object.keys(S.auras)){
+        const a=AURAS.find(x=>x.id===aId);if(!a||a.rarity!==filterRarity)continue;
+        const entries=S.auras[aId];if(!entries||entries.length<=1)continue;
+        // Sell all except 1 (skip equipped)
+        let kept=0;
+        for(let i=entries.length-1;i>=0;i--){
+            const isEq=S.equippedAuras.some(e=>e.id===aId&&e.mod===entries[i].mod);
+            if(isEq){kept++;continue;}
+            if(kept===0&&i===0)break; // keep at least 1
+            // Keep one non-equipped copy
+            if(entries.length-sold<=1)break;
+            let dv=SELL_VAL[a.rarity]||1;
+            if(entries[i].mod){const m=MODIFIERS.find(x=>x.id===entries[i].mod);if(m)dv*=m.pMult;}
+            dv=Math.floor(dv);
+            entries.splice(i,1);
+            S.dust+=dv;S.totalDust+=dv;dustGained+=dv;sold++;
+        }
+        if(!entries.length)delete S.auras[aId];
+    }
+    if(sold)toast(`Sold ${sold} duplicates (kept 1 each) for ${fmt(dustGained)}✨!`);
+    else toast('Nothing to sell!');
+    renderSellPanel();updateRes();save();
+}
+
+// === QOL: DPS TRACKING ===
+let dpsTracker={dmgTotal:0,startTime:0,goldTotal:0};
+function resetDpsTracker(){dpsTracker={dmgTotal:0,startTime:Date.now(),goldTotal:0};}
+function trackDps(dmg,gold){
+    if(!dpsTracker.startTime)dpsTracker.startTime=Date.now();
+    dpsTracker.dmgTotal+=dmg;
+    dpsTracker.goldTotal+=gold;
+}
+function getDps(){
+    const elapsed=(Date.now()-dpsTracker.startTime)/1000;
+    if(elapsed<1)return{dps:0,gpm:0};
+    return{dps:Math.floor(dpsTracker.dmgTotal/elapsed),gpm:Math.floor(dpsTracker.goldTotal/elapsed*60)};
+}
+
+// === QOL: AUTO-HATCH EGGS ===
+function checkAutoHatch(){
+    if(!getSetting('autoHatch'))return;
+    for(let i=S.eggSlots.length-1;i>=0;i--){
+        const sl=S.eggSlots[i];
+        if(sl&&Date.now()-sl.start>=sl.dur){
+            hatchEgg(i);
+        }
+    }
+}
+
+// === QOL: CRAFT ALL CHAIN (craft through all rarities) ===
+function craftAllChain(){
+    let totalCrafted=0;
+    const rarityOrder=['common','uncommon','rare','epic','legendary','mythic','divine','cosmic','ethereal','impossible','godly','primordial','eternal','omega','infinity','transcendent','glitched'];
+    for(const rarity of rarityOrder){
+        let keepGoing=true;
+        while(keepGoing){
+            keepGoing=false;
+            for(const aId of Object.keys(S.auras)){
+                const a=AURAS.find(x=>x.id===aId);if(!a||a.rarity!==rarity)continue;
+                const entries=S.auras[aId];if(!entries)continue;
+                const grp={};for(const e of entries){const k=e.mod||'_';if(!grp[k])grp[k]={mod:e.mod,cnt:0};grp[k].cnt++;}
+                for(const g of Object.values(grp)){
+                    if(g.cnt>=3){
+                        craftAura(aId,g.mod);
+                        totalCrafted++;keepGoing=true;break;
+                    }
+                }
+                if(keepGoing)break;
+            }
+        }
+    }
+    if(totalCrafted)toast(`Chain crafted ${totalCrafted} auras through all rarities!`);
+    else toast('Nothing to craft!');
+    renderCraftPanel();
+}
+
+// === QOL: AUTO-SELL THRESHOLD (quick set all below a rarity) ===
+function autoSellBelow(threshold){
+    if(!S.autoSellRarities)S.autoSellRarities={};
+    const rarities=['common','uncommon','rare','epic','legendary','mythic','divine','cosmic','ethereal','impossible','godly','primordial','eternal','omega','infinity','transcendent','glitched','reality'];
+    for(const r of rarities){
+        S.autoSellRarities[r]=ri(r)<ri(threshold);
+    }
+    save();renderAutoSellCheckboxes();
+    toast(`Auto-sell: everything below ${getRarity(threshold).name}`);
+}
+function autoSellClearAll(){
+    S.autoSellRarities={};
+    save();renderAutoSellCheckboxes();
+    toast('Auto-sell cleared.');
+}
+
+// === QOL: GEM SPEND CONFIRMATION ===
+function confirmGemSpend(amount,action,callback){
+    if(!getSetting('confirmGems')||amount<25){callback();return;}
+    if(confirm(`Spend ${amount} 💎 gems on ${action}?`))callback();
+}
+
+// === QOL: SESSION STATS ===
+let sessionStats={startTime:Date.now(),goldEarned:0,killCount:0,rollCount:0,aurasFound:0,dustEarned:0};
+function trackSessionGold(g){sessionStats.goldEarned+=g;}
+function trackSessionKill(){sessionStats.killCount++;}
+function trackSessionRoll(){sessionStats.rollCount++;}
+function trackSessionDust(d){sessionStats.dustEarned+=d;}
+function getSessionStats(){
+    const elapsed=Math.floor((Date.now()-sessionStats.startTime)/1000);
+    const mins=Math.floor(elapsed/60),secs=elapsed%60;
+    return{
+        time:`${mins}m ${secs}s`,
+        gold:sessionStats.goldEarned,
+        kills:sessionStats.killCount,
+        rolls:sessionStats.rollCount,
+        dust:sessionStats.dustEarned,
+        goldPerMin:mins>0?Math.floor(sessionStats.goldEarned/mins):sessionStats.goldEarned,
+    };
 }

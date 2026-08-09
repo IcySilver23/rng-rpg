@@ -358,14 +358,14 @@ const GEAR=[
 ];
 // === EGGS & PETS ===
 const EGG_TYPES=[
-{id:'basic_egg',name:'Basic Egg',icon:'🥚',cost:500,currency:'gold',hatchTime:60,pool:['lucky_cat','speed_bunny','gold_hamster','dust_bunny','shadow_wolf','coin_pig']},
-{id:'rare_egg',name:'Rare Egg',icon:'🪺',cost:2500,currency:'gold',hatchTime:180,pool:['crystal_fox','shadow_owl','ember_drake','flame_parrot','ice_wolf','swift_hawk','iron_rhino','mystic_owl']},
-{id:'epic_egg',name:'Epic Egg',icon:'🥚',cost:50,currency:'gems',hatchTime:600,pool:['void_serpent','star_phoenix','frost_titan','thunder_bear','ghost_cat','blood_bat','storm_eagle','golden_goose']},
-{id:'legend_egg',name:'Legend Egg',icon:'✨',cost:200,currency:'gems',hatchTime:1800,pool:['celestial_dragon','time_cat','reality_pup','diamond_turtle','phoenix_pup','ancient_tortoise','phoenix_lord']},
-{id:'cosmic_egg',name:'Cosmic Egg',icon:'🌌',cost:1000,currency:'gems',hatchTime:3600,pool:['universe_worm','infinity_bird','god_hamster','void_whale','cosmic_jellyfish','shadow_dragon','time_serpent']},
-{id:'divine_egg',name:'Divine Egg',icon:'💫',cost:5000,currency:'gems',hatchTime:7200,pool:['void_whale','cosmic_jellyfish','reality_dragon','divine_phoenix','omega_wolf']},
-{id:'ultra_egg',name:'Ultra Egg',icon:'🌟',cost:50000,currency:'gems',hatchTime:14400,pool:['ethereal_cat','impossible_bird','godly_hamster','primordial_serpent','eternal_dragon']},
-{id:'dust_egg',name:'Dust Egg',icon:'✨',cost:2000,currency:'dust',hatchTime:900,pool:['ghost_cat','thunder_bear','diamond_turtle','phoenix_pup','blood_bat','storm_eagle']},
+{id:'basic_egg',name:'Basic Egg',icon:'🥚',cost:400,currency:'gold',hatchTime:45,pool:['lucky_cat','speed_bunny','gold_hamster','dust_bunny','shadow_wolf','coin_pig']},
+{id:'rare_egg',name:'Rare Egg',icon:'🪺',cost:2000,currency:'gold',hatchTime:120,pool:['crystal_fox','shadow_owl','ember_drake','flame_parrot','ice_wolf','swift_hawk','iron_rhino','mystic_owl']},
+{id:'epic_egg',name:'Epic Egg',icon:'🥚',cost:30,currency:'gems',hatchTime:300,pool:['void_serpent','star_phoenix','frost_titan','thunder_bear','ghost_cat','blood_bat','storm_eagle','golden_goose']},
+{id:'legend_egg',name:'Legend Egg',icon:'✨',cost:120,currency:'gems',hatchTime:900,pool:['celestial_dragon','time_cat','reality_pup','diamond_turtle','phoenix_pup','ancient_tortoise','phoenix_lord']},
+{id:'cosmic_egg',name:'Cosmic Egg',icon:'🌌',cost:600,currency:'gems',hatchTime:1800,pool:['universe_worm','infinity_bird','god_hamster','void_whale','cosmic_jellyfish','shadow_dragon','time_serpent']},
+{id:'divine_egg',name:'Divine Egg',icon:'💫',cost:3000,currency:'gems',hatchTime:3600,pool:['void_whale','cosmic_jellyfish','reality_dragon','divine_phoenix','omega_wolf']},
+{id:'ultra_egg',name:'Ultra Egg',icon:'🌟',cost:25000,currency:'gems',hatchTime:7200,pool:['ethereal_cat','impossible_bird','godly_hamster','primordial_serpent','eternal_dragon']},
+{id:'dust_egg',name:'Dust Egg',icon:'✨',cost:1000,currency:'dust',hatchTime:600,pool:['ghost_cat','thunder_bear','diamond_turtle','phoenix_pup','blood_bat','storm_eagle']},
 ];
 const PETS=[
 {id:'lucky_cat',name:'Lucky Cat',icon:'🐱',rarity:'uncommon',bonus:{type:'luck',value:0.3},desc:'+0.3 Luck'},
@@ -434,148 +434,146 @@ const SKILLS=[
 ];
 const ELITE_MODS=['Enraged','Armored','Swift','Glowing','Cursed'];
 const ZONES=[
-{id:'plains',name:'Green Plains',icon:'🌿',desc:'Starter zone.',reqPower:0,enemies:[{name:'Slime',icon:'🟢',hp:50,dmg:5,gold:5,xp:3},{name:'Goblin',icon:'👺',hp:80,dmg:8,gold:8,xp:5},{name:'Wolf',icon:'🐺',hp:120,dmg:12,gold:12,xp:8},{name:'Bandit Chief',icon:'🥷',hp:300,dmg:22,gold:30,xp:20,boss:true}],gearDrop:0.10},
-{id:'volcanic',name:'Volcanic Depths',icon:'🌋',desc:'Scorching caves.',reqPower:100,enemies:[{name:'Fire Imp',icon:'😈',hp:200,dmg:25,gold:20,xp:12},{name:'Lava Golem',icon:'🗿',hp:400,dmg:40,gold:35,xp:22},{name:'Flame Wyrm',icon:'🐲',hp:600,dmg:55,gold:50,xp:35},{name:'Inferno Lord',icon:'👹',hp:1500,dmg:85,gold:150,xp:80,boss:true}],gearDrop:0.08},
-{id:'ocean',name:'Abyssal Ocean',icon:'🌊',desc:'Crushing depths.',reqPower:500,enemies:[{name:'Angler',icon:'🐟',hp:800,dmg:70,gold:60,xp:40},{name:'Kraken',icon:'🐙',hp:1500,dmg:100,gold:100,xp:65},{name:'Leviathan',icon:'🐋',hp:3000,dmg:150,gold:200,xp:120},{name:'Abyssal King',icon:'🔱',hp:7000,dmg:240,gold:500,xp:300,boss:true}],gearDrop:0.07},
-{id:'void',name:'Void Realm',icon:'🕳️',desc:'Reality bends.',reqPower:2500,enemies:[{name:'Void Walker',icon:'👤',hp:5000,dmg:300,gold:250,xp:180},{name:'Nebula Beast',icon:'🌌',hp:12000,dmg:500,gold:500,xp:300},{name:'Star Eater',icon:'⭐',hp:25000,dmg:800,gold:1000,xp:600},{name:'Void God',icon:'🌑',hp:60000,dmg:1300,gold:3000,xp:1500,boss:true}],gearDrop:0.06},
-{id:'cosmos',name:'Reality Core',icon:'🌀',desc:'Center of existence.',reqPower:15000,enemies:[{name:'Shard',icon:'💠',hp:30000,dmg:1000,gold:1500,xp:900},{name:'Paradox',icon:'⏳',hp:80000,dmg:2200,gold:3500,xp:2000},{name:'Entity',icon:'🌟',hp:180000,dmg:4000,gold:8000,xp:4000},{name:'CREATOR',icon:'👁️',hp:600000,dmg:7000,gold:30000,xp:15000,boss:true}],gearDrop:0.05},
-{id:'underworld',name:'Underworld',icon:'💀',desc:'Realm of the dead.',reqPower:50000,enemies:[{name:'Lost Soul',icon:'👻',hp:100000,dmg:5000,gold:5000,xp:3000},{name:'Demon Knight',icon:'😈',hp:250000,dmg:8000,gold:10000,xp:6000},{name:'Lich',icon:'☠️',hp:500000,dmg:12000,gold:20000,xp:10000},{name:'Death God',icon:'💀',hp:1500000,dmg:20000,gold:80000,xp:40000,boss:true}],gearDrop:0.05},
-{id:'celestial',name:'Celestial Realm',icon:'😇',desc:'Domain of the gods.',reqPower:200000,enemies:[{name:'Cherub',icon:'👼',hp:400000,dmg:15000,gold:15000,xp:8000},{name:'Seraph',icon:'🪽',hp:1000000,dmg:25000,gold:30000,xp:15000},{name:'Archangel',icon:'⚔️',hp:3000000,dmg:40000,gold:60000,xp:30000},{name:'GOD',icon:'✦',hp:10000000,dmg:80000,gold:250000,xp:100000,boss:true}],gearDrop:0.04},
+{id:'plains',name:'Green Plains',icon:'🌿',desc:'Starter zone.',reqPower:0,enemies:[{name:'Slime',icon:'🟢',hp:40,dmg:4,gold:8,xp:5},{name:'Goblin',icon:'👺',hp:70,dmg:7,gold:14,xp:8},{name:'Wolf',icon:'🐺',hp:110,dmg:11,gold:22,xp:12},{name:'Bandit Chief',icon:'🥷',hp:250,dmg:20,gold:60,xp:35,boss:true}],gearDrop:0.12},
+{id:'volcanic',name:'Volcanic Depths',icon:'🌋',desc:'Scorching caves.',reqPower:80,enemies:[{name:'Fire Imp',icon:'😈',hp:180,dmg:22,gold:35,xp:20},{name:'Lava Golem',icon:'🗿',hp:350,dmg:35,gold:55,xp:32},{name:'Flame Wyrm',icon:'🐲',hp:550,dmg:50,gold:85,xp:50},{name:'Inferno Lord',icon:'👹',hp:1200,dmg:75,gold:250,xp:120,boss:true}],gearDrop:0.10},
+{id:'ocean',name:'Abyssal Ocean',icon:'🌊',desc:'Crushing depths.',reqPower:400,enemies:[{name:'Angler',icon:'🐟',hp:700,dmg:60,gold:120,xp:65},{name:'Kraken',icon:'🐙',hp:1400,dmg:90,gold:200,xp:100},{name:'Leviathan',icon:'🐋',hp:2800,dmg:140,gold:350,xp:180},{name:'Abyssal King',icon:'🔱',hp:6000,dmg:220,gold:900,xp:450,boss:true}],gearDrop:0.08},
+{id:'void',name:'Void Realm',icon:'🕳️',desc:'Reality bends.',reqPower:2000,enemies:[{name:'Void Walker',icon:'👤',hp:4500,dmg:280,gold:500,xp:300},{name:'Nebula Beast',icon:'🌌',hp:10000,dmg:450,gold:900,xp:500},{name:'Star Eater',icon:'⭐',hp:22000,dmg:750,gold:1800,xp:900},{name:'Void God',icon:'🌑',hp:50000,dmg:1200,gold:5000,xp:2500,boss:true}],gearDrop:0.07},
+{id:'cosmos',name:'Reality Core',icon:'🌀',desc:'Center of existence.',reqPower:12000,enemies:[{name:'Shard',icon:'💠',hp:28000,dmg:900,gold:2500,xp:1400},{name:'Paradox',icon:'⏳',hp:70000,dmg:2000,gold:5000,xp:2800},{name:'Entity',icon:'🌟',hp:160000,dmg:3500,gold:12000,xp:6000},{name:'CREATOR',icon:'👁️',hp:500000,dmg:6500,gold:50000,xp:25000,boss:true}],gearDrop:0.06},
+{id:'underworld',name:'Underworld',icon:'💀',desc:'Realm of the dead.',reqPower:45000,enemies:[{name:'Lost Soul',icon:'👻',hp:90000,dmg:4500,gold:8000,xp:4500},{name:'Demon Knight',icon:'😈',hp:220000,dmg:7500,gold:18000,xp:9000},{name:'Lich',icon:'☠️',hp:450000,dmg:11000,gold:40000,xp:18000},{name:'Death God',icon:'💀',hp:1300000,dmg:18000,gold:120000,xp:60000,boss:true}],gearDrop:0.06},
+{id:'celestial',name:'Celestial Realm',icon:'😇',desc:'Domain of the gods.',reqPower:180000,enemies:[{name:'Cherub',icon:'👼',hp:350000,dmg:14000,gold:25000,xp:12000},{name:'Seraph',icon:'🪽',hp:900000,dmg:23000,gold:55000,xp:25000},{name:'Archangel',icon:'⚔️',hp:2500000,dmg:38000,gold:120000,xp:55000},{name:'GOD',icon:'✦',hp:8000000,dmg:75000,gold:400000,xp:150000,boss:true}],gearDrop:0.05},
 ];
 const DUNGEONS=[
-{id:'d1',name:"Goblin Lair",icon:'👑',reqPower:30,boss:{name:'Goblin King',icon:'👺',hp:2000},time:30,rewards:{gold:500,gems:10,gear:'chain_mail'}},
-{id:'d2',name:"Dragon Nest",icon:'🐉',reqPower:150,boss:{name:'Dragon',icon:'🐲',hp:10000},time:45,rewards:{gold:3000,gems:50,gear:'inferno_blade'}},
-{id:'d3',name:"Kraken Deep",icon:'🐙',reqPower:600,boss:{name:'Kraken',icon:'🐙',hp:50000},time:60,rewards:{gold:15000,gems:150,gear:'ocean_trident'}},
-{id:'d4',name:"Void Throne",icon:'🌑',reqPower:3000,boss:{name:'Void Emperor',icon:'👁️',hp:200000},time:75,rewards:{gold:80000,gems:500,gear:'universe_ender'}},
-{id:'d5',name:"Reality Fracture",icon:'🌀',reqPower:15000,boss:{name:'Reality',icon:'🌀',hp:1000000},time:90,rewards:{gold:500000,gems:2000,gear:'infinity_edge'}},
-{id:'d6',name:"Hell's Gate",icon:'💀',reqPower:50000,boss:{name:'Hell Lord',icon:'😈',hp:5000000},time:100,rewards:{gold:2000000,gems:5000,gear:'death_crown'}},
-{id:'d7',name:"Heaven's Trial",icon:'😇',reqPower:200000,boss:{name:'Supreme Angel',icon:'👼',hp:25000000},time:120,rewards:{gold:10000000,gems:15000,gear:'celestial_edge'}},
+{id:'d1',name:"Goblin Lair",icon:'👑',reqPower:25,boss:{name:'Goblin King',icon:'👺',hp:1500},time:30,rewards:{gold:800,gems:10,gear:'chain_mail'}},
+{id:'d2',name:"Dragon Nest",icon:'🐉',reqPower:120,boss:{name:'Dragon',icon:'🐲',hp:8000},time:45,rewards:{gold:4000,gems:40,gear:'inferno_blade'}},
+{id:'d3',name:"Kraken Deep",icon:'🐙',reqPower:500,boss:{name:'Kraken',icon:'🐙',hp:40000},time:60,rewards:{gold:20000,gems:120,gear:'ocean_trident'}},
+{id:'d4',name:"Void Throne",icon:'🌑',reqPower:2500,boss:{name:'Void Emperor',icon:'👁️',hp:180000},time:75,rewards:{gold:100000,gems:400,gear:'universe_ender'}},
+{id:'d5',name:"Reality Fracture",icon:'🌀',reqPower:12000,boss:{name:'Reality',icon:'🌀',hp:800000},time:90,rewards:{gold:600000,gems:1500,gear:'infinity_edge'}},
+{id:'d6',name:"Hell's Gate",icon:'💀',reqPower:45000,boss:{name:'Hell Lord',icon:'😈',hp:4000000},time:100,rewards:{gold:3000000,gems:4000,gear:'death_crown'}},
+{id:'d7',name:"Heaven's Trial",icon:'😇',reqPower:180000,boss:{name:'Supreme Angel',icon:'👼',hp:20000000},time:120,rewards:{gold:15000000,gems:12000,gear:'celestial_edge'}},
 ];
 
 // === POTIONS ===
 const POTIONS=[
-{id:'luck_pot',name:'Luck Potion',icon:'🍀',desc:'2x Luck for 60s',cost:100,currency:'dust',duration:60,effect:{type:'luck',value:2}},
-{id:'gold_pot',name:'Gold Potion',icon:'🪙',desc:'3x Gold for 60s',cost:150,currency:'dust',duration:60,effect:{type:'gold',value:3}},
-{id:'xp_pot',name:'XP Potion',icon:'📖',desc:'2x XP for 60s',cost:120,currency:'dust',duration:60,effect:{type:'xp',value:2}},
-{id:'dmg_pot',name:'Power Potion',icon:'⚔️',desc:'2x DMG for 60s',cost:200,currency:'dust',duration:60,effect:{type:'dmg',value:2}},
-{id:'speed_pot',name:'Speed Potion',icon:'⚡',desc:'2x Roll Speed for 60s',cost:80,currency:'dust',duration:60,effect:{type:'speed',value:2}},
-{id:'mega_luck',name:'Mega Luck',icon:'☘️',desc:'5x Luck for 30s',cost:500,currency:'dust',duration:30,effect:{type:'luck',value:5}},
+{id:'luck_pot',name:'Luck Potion',icon:'🍀',desc:'2x Luck for 120s',cost:60,currency:'dust',duration:120,effect:{type:'luck',value:2}},
+{id:'gold_pot',name:'Gold Potion',icon:'🪙',desc:'3x Gold for 120s',cost:80,currency:'dust',duration:120,effect:{type:'gold',value:3}},
+{id:'xp_pot',name:'XP Potion',icon:'📖',desc:'2x XP for 120s',cost:70,currency:'dust',duration:120,effect:{type:'xp',value:2}},
+{id:'dmg_pot',name:'Power Potion',icon:'⚔️',desc:'2x DMG for 90s',cost:100,currency:'dust',duration:90,effect:{type:'dmg',value:2}},
+{id:'speed_pot',name:'Speed Potion',icon:'⚡',desc:'2x Roll Speed for 120s',cost:50,currency:'dust',duration:120,effect:{type:'speed',value:2}},
+{id:'mega_luck',name:'Mega Luck',icon:'☘️',desc:'5x Luck for 60s',cost:300,currency:'dust',duration:60,effect:{type:'luck',value:5}},
 ];
 
 // === DAILY REWARDS ===
 const DAILY_REWARDS=[
-{day:1,reward:{gold:1000,gems:5}},
-{day:2,reward:{gold:2000,dust:100}},
-{day:3,reward:{gems:20,dust:200}},
-{day:4,reward:{gold:5000,gems:15,dust:300}},
-{day:5,reward:{gems:40,dust:500,enchantStones:1}},
-{day:6,reward:{gold:10000,gems:50,dust:1000}},
-{day:7,reward:{gems:150,dust:3000,enchantStones:3}},
+{day:1,reward:{gold:1500,gems:5}},
+{day:2,reward:{gold:3000,dust:150}},
+{day:3,reward:{gems:25,dust:300}},
+{day:4,reward:{gold:8000,gems:20,dust:500}},
+{day:5,reward:{gems:50,dust:800,enchantStones:2}},
+{day:6,reward:{gold:20000,gems:75,dust:1500}},
+{day:7,reward:{gems:200,dust:5000,enchantStones:5}},
 ];
 
 // === CODES ===
 const CODES={
 'LAUNCH2026':{gold:5000,gems:50,used:false},
-'FREEGEMS':{gems:100,used:false},
-'LUCKYDAY':{dust:500,used:false},
-'RNGGOD':{gems:200,dust:1000,used:false},
-'TOWER':{gold:10000,gems:50,used:false},
-'BIGUPDATE':{gems:500,dust:2000,enchantStones:5,used:false},
-'PETLOVER':{gems:300,dust:1000,used:false,special:'egg'},
-'LUCKY10X':{gems:100,used:false,special:'luck10x'},
-'GODMODE':{gold:50000,gems:1000,dust:5000,used:false},
-'ENCHANTME':{enchantStones:10,dust:3000,used:false},
-'NEWZONES':{gold:20000,gems:200,used:false},
-'CELESTIAL':{gems:500,dust:5000,enchantStones:3,used:false},
-'UNDERWORLD':{gold:30000,gems:300,dust:2000,used:false},
-'LUCK5MIN':{gems:50,used:false,special:'luck5x'},
-'MEGADUST':{dust:10000,used:false},
+'RNGGOD':{gems:150,dust:800,used:false},
+'TOWER':{gold:8000,gems:40,dust:300,used:false},
+'BIGUPDATE':{gems:400,dust:1500,enchantStones:4,used:false},
+'PETLOVER':{gems:250,dust:800,used:false,special:'egg'},
+'LUCKY10X':{gems:80,dust:500,used:false,special:'luck10x'},
+'ENCHANTME':{enchantStones:8,dust:2000,used:false},
+'NEWZONES':{gold:15000,gems:150,dust:500,used:false},
+'CELESTIAL':{gems:400,dust:3000,enchantStones:3,used:false},
+'UNDERWORLD':{gold:20000,gems:250,dust:1500,used:false},
+'LUCK5MIN':{gems:60,dust:300,used:false,special:'luck5x'},
+'MEGADUST':{dust:8000,gems:50,used:false},
+'BIGQOL':{gold:10000,gems:300,dust:2000,enchantStones:3,used:false},
 };
 
 // === QUESTS ===
 const QUESTS=[
-{id:'q1',name:'First Steps',desc:'Roll 10 times',check:s=>s.totalRolls>=10,reward:{gold:100},next:'q2'},
-{id:'q2',name:'Fighter',desc:'Kill 5 enemies',check:s=>s.killCount>=5,reward:{gold:200},next:'q3'},
-{id:'q3',name:'Rare Find',desc:'Get a Rare aura',check:s=>ri(s.bestRarity)>=2,reward:{gems:10},next:'q4'},
-{id:'q4',name:'Level 5',desc:'Reach Lv.5',check:s=>s.level>=5,reward:{gold:500},next:'q5'},
-{id:'q5',name:'Pet Owner',desc:'Hatch a pet',check:s=>Object.keys(s.pets).length>=1,reward:{gems:20},next:'q6'},
-{id:'q6',name:'Epic!',desc:'Get an Epic aura',check:s=>ri(s.bestRarity)>=3,reward:{gems:30},next:'q7'},
-{id:'q7',name:'Explorer',desc:'Enter Zone 2',check:s=>s.currentZone>=1,reward:{gold:1000},next:'q8'},
-{id:'q8',name:'Boss Kill',desc:'Defeat a boss',check:s=>s.bossKills>=1,reward:{gems:50},next:'q9'},
-{id:'q9',name:'Dungeon',desc:'Clear a dungeon',check:s=>s.dungeonsDone.length>=1,reward:{gems:100},next:'q10'},
-{id:'q10',name:'Legendary!',desc:'Get a Legendary',check:s=>ri(s.bestRarity)>=4,reward:{gems:100},next:'q11'},
-{id:'q11',name:'Lv.20',desc:'Reach Lv.20',check:s=>s.level>=20,reward:{gold:5000,gems:50},next:'q12'},
-{id:'q12',name:'Rebirth',desc:'Rebirth once',check:s=>s.rebirths>=1,reward:{gems:200},next:'q13'},
-{id:'q13',name:'Deep Dive',desc:'Enter Zone 3',check:s=>s.currentZone>=2,reward:{gold:10000},next:'q14'},
-{id:'q14',name:'Mythic!',desc:'Get a Mythic',check:s=>ri(s.bestRarity)>=5,reward:{gems:300},next:'q15'},
-{id:'q15',name:'Tower 10',desc:'Reach Tower F10',check:s=>s.towerFloor>=10,reward:{gems:200},next:'q16'},
-{id:'q16',name:'Void',desc:'Enter Zone 4',check:s=>s.currentZone>=3,reward:{gold:50000},next:'q17'},
-{id:'q17',name:'Divine!',desc:'Get a Divine',check:s=>ri(s.bestRarity)>=6,reward:{gems:500},next:'q18'},
-{id:'q18',name:'Reality',desc:'Enter Zone 5',check:s=>s.currentZone>=4,reward:{gems:1000},next:'q19'},
-{id:'q19',name:'Cosmic!',desc:'Get a Cosmic',check:s=>ri(s.bestRarity)>=7,reward:{gems:2000},next:'q20'},
-{id:'q20',name:'THE END?',desc:'Get Impossible',check:s=>ri(s.bestRarity)>=9,reward:{gems:50000},next:null},
+{id:'q1',name:'First Steps',desc:'Roll 10 times',check:s=>s.totalRolls>=10,reward:{gold:200},next:'q2'},
+{id:'q2',name:'Fighter',desc:'Kill 5 enemies',check:s=>s.killCount>=5,reward:{gold:300},next:'q3'},
+{id:'q3',name:'Rare Find',desc:'Get a Rare aura',check:s=>ri(s.bestRarity)>=2,reward:{gems:10,gold:500},next:'q4'},
+{id:'q4',name:'Level 5',desc:'Reach Lv.5',check:s=>s.level>=5,reward:{gold:800,gems:5},next:'q5'},
+{id:'q5',name:'Pet Owner',desc:'Hatch a pet',check:s=>Object.keys(s.pets).length>=1,reward:{gems:20,dust:50},next:'q6'},
+{id:'q6',name:'Epic!',desc:'Get an Epic aura',check:s=>ri(s.bestRarity)>=3,reward:{gems:30,gold:1500},next:'q7'},
+{id:'q7',name:'Explorer',desc:'Enter Zone 2',check:s=>s.currentZone>=1,reward:{gold:2000,gems:15},next:'q8'},
+{id:'q8',name:'Boss Kill',desc:'Defeat a boss',check:s=>s.bossKills>=1,reward:{gems:40,gold:3000},next:'q9'},
+{id:'q9',name:'Dungeon',desc:'Clear a dungeon',check:s=>s.dungeonsDone.length>=1,reward:{gems:80,dust:200},next:'q10'},
+{id:'q10',name:'Legendary!',desc:'Get a Legendary',check:s=>ri(s.bestRarity)>=4,reward:{gems:100,gold:8000},next:'q11'},
+{id:'q11',name:'Lv.20',desc:'Reach Lv.20',check:s=>s.level>=20,reward:{gold:10000,gems:60},next:'q12'},
+{id:'q12',name:'Rebirth',desc:'Rebirth once',check:s=>s.rebirths>=1,reward:{gems:200,dust:1000},next:'q13'},
+{id:'q13',name:'Deep Dive',desc:'Enter Zone 3',check:s=>s.currentZone>=2,reward:{gold:25000,gems:80},next:'q14'},
+{id:'q14',name:'Mythic!',desc:'Get a Mythic',check:s=>ri(s.bestRarity)>=5,reward:{gems:300,dust:2000},next:'q15'},
+{id:'q15',name:'Tower 10',desc:'Reach Tower F10',check:s=>s.towerFloor>=10,reward:{gems:200,enchantStones:3},next:'q16'},
+{id:'q16',name:'Void',desc:'Enter Zone 4',check:s=>s.currentZone>=3,reward:{gold:100000,gems:200},next:'q17'},
+{id:'q17',name:'Divine!',desc:'Get a Divine',check:s=>ri(s.bestRarity)>=6,reward:{gems:500,dust:5000},next:'q18'},
+{id:'q18',name:'Reality',desc:'Enter Zone 5',check:s=>s.currentZone>=4,reward:{gems:1000,dust:10000},next:'q19'},
+{id:'q19',name:'Cosmic!',desc:'Get a Cosmic',check:s=>ri(s.bestRarity)>=7,reward:{gems:3000,dust:25000},next:'q20'},
+{id:'q20',name:'THE END?',desc:'Get Impossible',check:s=>ri(s.bestRarity)>=9,reward:{gems:50000,dust:100000},next:null},
 ];
 
 // === ACHIEVEMENTS ===
 const ACHIEVEMENTS=[
-{id:'r100',name:'100 Rolls',desc:'Roll 100x',check:s=>s.totalRolls>=100,reward:{gold:200}},
-{id:'r1k',name:'1K Rolls',desc:'Roll 1,000x',check:s=>s.totalRolls>=1000,reward:{gems:50}},
-{id:'r10k',name:'10K Rolls',desc:'Roll 10,000x',check:s=>s.totalRolls>=10000,reward:{gems:200}},
-{id:'k100',name:'100 Kills',desc:'Kill 100',check:s=>s.killCount>=100,reward:{gems:30}},
-{id:'k1k',name:'1K Kills',desc:'Kill 1,000',check:s=>s.killCount>=1000,reward:{gems:100}},
-{id:'e10',name:'10 Elites',desc:'Kill 10 elites',check:s=>s.eliteKills>=10,reward:{gems:50}},
-{id:'lv25',name:'Lv.25',desc:'Reach Lv.25',check:s=>s.level>=25,reward:{gems:100}},
-{id:'lv50',name:'Lv.50',desc:'Reach Lv.50',check:s=>s.level>=50,reward:{gems:500}},
-{id:'rb3',name:'Rebirth x3',desc:'3 rebirths',check:s=>s.rebirths>=3,reward:{gems:500}},
-{id:'ms',name:'Shiny!',desc:'Find Shiny',check:s=>s.modsFound.includes('shiny'),reward:{gems:20}},
-{id:'mv',name:'Void!',desc:'Find Void mod',check:s=>s.modsFound.includes('void'),reward:{gems:100}},
-{id:'p5',name:'5 Pets',desc:'Own 5 pets',check:s=>Object.keys(s.pets).length>=5,reward:{gems:100}},
-{id:'t25',name:'Tower F25',desc:'Floor 25',check:s=>s.towerFloor>=25,reward:{gems:300}},
-{id:'t50',name:'Tower F50',desc:'Floor 50',check:s=>s.towerFloor>=50,reward:{gems:1000}},
-{id:'d3',name:'3 Dungeons',desc:'Clear 3',check:s=>s.dungeonsDone.length>=3,reward:{gems:200}},
-{id:'rap10k',name:'10K RAP',desc:'Total RAP 10K',check:s=>calcRAP(s)>=10000,reward:{gems:200}},
-{id:'rap100k',name:'100K RAP',desc:'Total RAP 100K',check:s=>calcRAP(s)>=100000,reward:{gems:1000}},
+{id:'r100',name:'100 Rolls',desc:'Roll 100x',check:s=>s.totalRolls>=100,reward:{gold:500}},
+{id:'r1k',name:'1K Rolls',desc:'Roll 1,000x',check:s=>s.totalRolls>=1000,reward:{gems:40,dust:200}},
+{id:'r10k',name:'10K Rolls',desc:'Roll 10,000x',check:s=>s.totalRolls>=10000,reward:{gems:200,dust:2000}},
+{id:'k100',name:'100 Kills',desc:'Kill 100',check:s=>s.killCount>=100,reward:{gems:20,gold:1000}},
+{id:'k1k',name:'1K Kills',desc:'Kill 1,000',check:s=>s.killCount>=1000,reward:{gems:80,gold:5000}},
+{id:'e10',name:'10 Elites',desc:'Kill 10 elites',check:s=>s.eliteKills>=10,reward:{gems:40,dust:100}},
+{id:'lv25',name:'Lv.25',desc:'Reach Lv.25',check:s=>s.level>=25,reward:{gems:80,gold:5000}},
+{id:'lv50',name:'Lv.50',desc:'Reach Lv.50',check:s=>s.level>=50,reward:{gems:400,dust:3000}},
+{id:'rb3',name:'Rebirth x3',desc:'3 rebirths',check:s=>s.rebirths>=3,reward:{gems:500,dust:5000}},
+{id:'ms',name:'Shiny!',desc:'Find Shiny',check:s=>s.modsFound.includes('shiny'),reward:{gems:15,dust:50}},
+{id:'mv',name:'Void!',desc:'Find Void mod',check:s=>s.modsFound.includes('void'),reward:{gems:80,dust:500}},
+{id:'p5',name:'5 Pets',desc:'Own 5 pets',check:s=>Object.keys(s.pets).length>=5,reward:{gems:80,dust:300}},
+{id:'t25',name:'Tower F25',desc:'Floor 25',check:s=>s.towerFloor>=25,reward:{gems:250,dust:1000}},
+{id:'t50',name:'Tower F50',desc:'Floor 50',check:s=>s.towerFloor>=50,reward:{gems:800,dust:5000}},
+{id:'d3',name:'3 Dungeons',desc:'Clear 3',check:s=>s.dungeonsDone.length>=3,reward:{gems:150,dust:500}},
+{id:'rap10k',name:'10K RAP',desc:'Total RAP 10K',check:s=>calcRAP(s)>=10000,reward:{gems:200,dust:1000}},
+{id:'rap100k',name:'100K RAP',desc:'Total RAP 100K',check:s=>calcRAP(s)>=100000,reward:{gems:1000,dust:10000}},
 ];
 
 // === SHOP ===
 const SHOP=[
-{id:'luck_boost',name:'Luck+',desc:'+0.3 luck/lv',max:50,base:500,mult:1.8,cur:'gold'},
-{id:'roll_speed',name:'Speed+',desc:'+10% speed/lv',max:25,base:800,mult:2,cur:'gold'},
-{id:'dmg_boost',name:'DMG+',desc:'+10% dmg/lv',max:30,base:600,mult:1.9,cur:'gold'},
-{id:'hp_boost',name:'HP+',desc:'+20 HP/lv',max:40,base:400,mult:1.7,cur:'gold'},
-{id:'def_boost',name:'DEF+',desc:'+3 def/lv',max:30,base:500,mult:1.8,cur:'gold'},
-{id:'gold_boost',name:'Gold+',desc:'+10% gold/lv',max:25,base:1000,mult:2,cur:'gold'},
-{id:'xp_boost',name:'XP+',desc:'+8% XP/lv',max:30,base:800,mult:1.9,cur:'gold'},
-{id:'crit_boost',name:'Crit+',desc:'+2% crit/lv',max:20,base:100,mult:2.2,cur:'gems'},
-{id:'double_roll',name:'Double+',desc:'+1.5% double/lv',max:20,base:150,mult:2.2,cur:'gems'},
-{id:'gear_luck',name:'Gear+',desc:'+8% drop/lv',max:20,base:120,mult:2.2,cur:'gems'},
-{id:'egg_speed',name:'Hatch+',desc:'+10% hatch/lv',max:20,base:80,mult:2,cur:'gems'},
-{id:'mod_luck',name:'Mod+',desc:'+8% mod chance/lv',max:15,base:200,mult:2.5,cur:'gems'},
-{id:'offline_boost',name:'Offline+',desc:'+15% offline/lv',max:20,base:150,mult:2.2,cur:'gems'},
-{id:'aura_slots',name:'Aura Slots',desc:'+1 equip slot',max:2,base:1000,mult:5,cur:'gems'},
-{id:'auto_roll',name:'Auto Roll',desc:'Unlock & speed up auto',max:10,base:2000,mult:2.5,cur:'gold'},
-{id:'multi_roll',name:'Multi Roll',desc:'Roll multiple (+1/lv)',max:9,base:1500,mult:2.5,cur:'gold'},
-{id:'auto_battle',name:'Auto Battle',desc:'Unlock auto-fight',max:1,base:3000,mult:1,cur:'gold'},
-{id:'inv_slots',name:'Inventory+',desc:'+10 aura slots/lv',max:15,base:400,mult:1.8,cur:'gold'},
-{id:'auto_sell_unlock',name:'Auto Sell',desc:'Unlock auto-selling',max:1,base:5000,mult:1,cur:'gold'},
+{id:'luck_boost',name:'Luck+',desc:'+0.3 luck/lv',max:50,base:200,mult:1.55,cur:'gold'},
+{id:'roll_speed',name:'Speed+',desc:'+10% speed/lv',max:25,base:350,mult:1.6,cur:'gold'},
+{id:'dmg_boost',name:'DMG+',desc:'+10% dmg/lv',max:30,base:250,mult:1.55,cur:'gold'},
+{id:'hp_boost',name:'HP+',desc:'+20 HP/lv',max:40,base:150,mult:1.5,cur:'gold'},
+{id:'def_boost',name:'DEF+',desc:'+3 def/lv',max:30,base:200,mult:1.55,cur:'gold'},
+{id:'gold_boost',name:'Gold+',desc:'+10% gold/lv',max:25,base:400,mult:1.6,cur:'gold'},
+{id:'xp_boost',name:'XP+',desc:'+8% XP/lv',max:30,base:300,mult:1.55,cur:'gold'},
+{id:'crit_boost',name:'Crit+',desc:'+2% crit/lv',max:20,base:30,mult:1.7,cur:'gems'},
+{id:'double_roll',name:'Double+',desc:'+1.5% double/lv',max:20,base:40,mult:1.7,cur:'gems'},
+{id:'gear_luck',name:'Gear+',desc:'+8% drop/lv',max:20,base:35,mult:1.7,cur:'gems'},
+{id:'egg_speed',name:'Hatch+',desc:'+10% hatch/lv',max:20,base:25,mult:1.6,cur:'gems'},
+{id:'mod_luck',name:'Mod+',desc:'+8% mod chance/lv',max:15,base:50,mult:1.8,cur:'gems'},
+{id:'offline_boost',name:'Offline+',desc:'+15% offline/lv',max:20,base:40,mult:1.7,cur:'gems'},
+{id:'aura_slots',name:'Aura Slots',desc:'+1 equip slot',max:2,base:200,mult:4,cur:'gems'},
+{id:'auto_roll',name:'Auto Roll',desc:'Unlock & speed up auto',max:10,base:800,mult:2,cur:'gold'},
+{id:'multi_roll',name:'Multi Roll',desc:'Roll multiple (+1/lv)',max:9,base:600,mult:2,cur:'gold'},
+{id:'auto_battle',name:'Auto Battle',desc:'Unlock auto-fight',max:1,base:500,mult:1,cur:'gold'},
+{id:'inv_slots',name:'Inventory+',desc:'+10 aura slots/lv',max:15,base:200,mult:1.6,cur:'gold'},
+{id:'auto_sell_unlock',name:'Auto Sell',desc:'Unlock auto-selling',max:1,base:1500,mult:1,cur:'gold'},
 ];
 
-const REBIRTH_REQS=[{lv:25,gold:50000},{lv:35,gold:200000},{lv:45,gold:1000000},{lv:55,gold:5e6},{lv:65,gold:25e6},{lv:80,gold:100e6},{lv:95,gold:500e6},{lv:110,gold:2e9}];
+const REBIRTH_REQS=[{lv:25,gold:40000},{lv:35,gold:150000},{lv:45,gold:600000},{lv:55,gold:3e6},{lv:65,gold:15e6},{lv:75,gold:60e6},{lv:90,gold:300e6},{lv:105,gold:1.5e9}];
 const RB_BONUS={luck:0.3,power:0.08,xp:0.15,gold:0.15};
 const SELL_VAL={common:1,uncommon:3,rare:10,epic:30,legendary:100,mythic:500,divine:2000,cosmic:10000,ethereal:50000,impossible:500000,godly:5000000,primordial:50000000,eternal:500000000,omega:5000000000,infinity:50000000000,transcendent:500000000000,glitched:5000000000000,reality:50000000000000};
 
 // === TRADING POST (rotating stock, refreshes) ===
 const TRADE_POOL=[
-    {id:'t1',aura:'crystal_vein',cost:50,currency:'dust'},
-    {id:'t2',aura:'blood_moon',cost:80,currency:'dust'},
-    {id:'t3',aura:'phoenix_feather',cost:120,currency:'dust'},
-    {id:'t4',aura:'inferno_core',cost:150,currency:'dust'},
-    {id:'t5',aura:'singularity',cost:300,currency:'dust'},
-    {id:'t6',aura:'dimension_tear',cost:600,currency:'dust'},
-    {id:'t7',aura:'void_emperor',cost:1500,currency:'dust'},
-    {id:'t8',aura:'hellfire_crown',cost:400,currency:'dust'},
-    {id:'t9',aura:'leviathan_soul',cost:2000,currency:'dust'},
-    {id:'t10',aura:'cosmic_creator',cost:5000,currency:'dust'},
+    {id:'t1',aura:'crystal_vein',cost:30,currency:'dust'},
+    {id:'t2',aura:'blood_moon',cost:45,currency:'dust'},
+    {id:'t3',aura:'phoenix_feather',cost:50,currency:'dust'},
+    {id:'t4',aura:'inferno_core',cost:60,currency:'dust'},
+    {id:'t5',aura:'singularity',cost:150,currency:'dust'},
+    {id:'t6',aura:'dimension_tear',cost:400,currency:'dust'},
+    {id:'t7',aura:'void_emperor',cost:1200,currency:'dust'},
+    {id:'t8',aura:'hellfire_crown',cost:250,currency:'dust'},
+    {id:'t9',aura:'leviathan_soul',cost:1500,currency:'dust'},
+    {id:'t10',aura:'cosmic_creator',cost:4000,currency:'dust'},
 ];
 
 // === ENCHANTMENTS ===
@@ -588,29 +586,29 @@ const ENCHANT_POOL=[
     {id:'ench_def',name:'+DEF',stat:'def',min:5,max:50},
     {id:'ench_ls',name:'+Lifesteal',stat:'lifesteal',min:0.02,max:0.08},
 ];
-const ENCHANT_COST={base:200,perSlot:1.5}; // dust cost, scales per existing enchant
+const ENCHANT_COST={base:120,perSlot:1.4}; // dust cost, scales per existing enchant
 
 // === WORLD BOSSES (expanded with phases, enrage, exclusive loot) ===
 const WORLD_BOSSES=[
-    {id:'wb_titan',name:'World Titan',icon:'🗿',hp:1000000,enrageTime:120,phases:[
+    {id:'wb_titan',name:'World Titan',icon:'🗿',hp:800000,enrageTime:120,phases:[
         {threshold:1,name:'Phase 1: Awakening',dmgMult:1,color:'var(--uncommon)'},
         {threshold:0.6,name:'Phase 2: Fury',dmgMult:1.5,color:'var(--legendary)'},
         {threshold:0.3,name:'Phase 3: Rampage',dmgMult:2.5,color:'var(--mythic)'}],
-        rewards:{gold:100000,gems:500,dust:2000},milestones:[
-        {dmg:100000,reward:{gold:20000}},{dmg:300000,reward:{gems:100}},{dmg:600000,reward:{dust:1000,enchantStones:3}},{dmg:1000000,reward:{gems:500,dust:5000}}]},
-    {id:'wb_dragon',name:'Elder Wyrm',icon:'🐉',hp:5000000,enrageTime:180,phases:[
+        rewards:{gold:150000,gems:400,dust:3000},milestones:[
+        {dmg:80000,reward:{gold:30000}},{dmg:250000,reward:{gems:80,dust:500}},{dmg:500000,reward:{dust:1500,enchantStones:3}},{dmg:800000,reward:{gems:400,dust:5000}}]},
+    {id:'wb_dragon',name:'Elder Wyrm',icon:'🐉',hp:4000000,enrageTime:180,phases:[
         {threshold:1,name:'Phase 1: Slumber',dmgMult:0.8,color:'var(--uncommon)'},
         {threshold:0.5,name:'Phase 2: Inferno',dmgMult:2,color:'var(--legendary)'},
         {threshold:0.2,name:'Phase 3: Apocalypse',dmgMult:3,color:'var(--mythic)'}],
-        rewards:{gold:500000,gems:2000,dust:10000},milestones:[
-        {dmg:500000,reward:{gold:100000}},{dmg:1500000,reward:{gems:300}},{dmg:3000000,reward:{dust:5000,enchantStones:8}},{dmg:5000000,reward:{gems:2000,dust:20000}}]},
-    {id:'wb_god',name:'Fallen God',icon:'⚡',hp:25000000,enrageTime:240,phases:[
+        rewards:{gold:800000,gems:1500,dust:15000},milestones:[
+        {dmg:400000,reward:{gold:150000}},{dmg:1200000,reward:{gems:400,dust:3000}},{dmg:2500000,reward:{dust:8000,enchantStones:8}},{dmg:4000000,reward:{gems:1500,dust:25000}}]},
+    {id:'wb_god',name:'Fallen God',icon:'⚡',hp:20000000,enrageTime:240,phases:[
         {threshold:1,name:'Phase 1: Descent',dmgMult:1,color:'var(--uncommon)'},
         {threshold:0.7,name:'Phase 2: Wrath',dmgMult:2,color:'var(--legendary)'},
         {threshold:0.4,name:'Phase 3: Judgment',dmgMult:3,color:'var(--mythic)'},
         {threshold:0.15,name:'Phase 4: Extinction',dmgMult:5,color:'var(--divine)'}],
-        rewards:{gold:2000000,gems:5000,dust:50000},milestones:[
-        {dmg:2000000,reward:{gold:500000}},{dmg:8000000,reward:{gems:1000}},{dmg:15000000,reward:{dust:25000,enchantStones:15}},{dmg:25000000,reward:{gems:5000,dust:100000}}]},
+        rewards:{gold:5000000,gems:5000,dust:80000},milestones:[
+        {dmg:2000000,reward:{gold:800000}},{dmg:6000000,reward:{gems:1500,dust:15000}},{dmg:12000000,reward:{dust:40000,enchantStones:15}},{dmg:20000000,reward:{gems:5000,dust:150000}}]},
 ];
 
 // === ASCENSION (prestige layer 2, resets rebirths) ===
@@ -674,27 +672,27 @@ const TITLES=[
 
 // === LUCKY WHEEL ===
 const WHEEL_PRIZES=[
-    {name:'100 Gold',weight:30,reward:{gold:100}},
-    {name:'500 Gold',weight:20,reward:{gold:500}},
-    {name:'2K Gold',weight:12,reward:{gold:2000}},
-    {name:'10 Gems',weight:10,reward:{gems:10}},
-    {name:'50 Gems',weight:5,reward:{gems:50}},
-    {name:'200 Dust',weight:10,reward:{dust:200}},
-    {name:'1K Dust',weight:5,reward:{dust:1000}},
-    {name:'Enchant Stone',weight:4,reward:{enchantStones:1}},
-    {name:'3 Enchant Stones',weight:2,reward:{enchantStones:3}},
+    {name:'200 Gold',weight:25,reward:{gold:200}},
+    {name:'1K Gold',weight:18,reward:{gold:1000}},
+    {name:'5K Gold',weight:10,reward:{gold:5000}},
+    {name:'15 Gems',weight:12,reward:{gems:15}},
+    {name:'60 Gems',weight:5,reward:{gems:60}},
+    {name:'300 Dust',weight:12,reward:{dust:300}},
+    {name:'1.5K Dust',weight:6,reward:{dust:1500}},
+    {name:'Enchant Stone',weight:5,reward:{enchantStones:1}},
+    {name:'3 Enchant Stones',weight:3,reward:{enchantStones:3}},
     {name:'500 Gems JACKPOT',weight:1,reward:{gems:500}},
-    {name:'Nothing',weight:5,reward:{}},
+    {name:'Nothing',weight:3,reward:{}},
 ];
 const WHEEL_COST=25; // gems per spin
 
 // === CHALLENGES ===
 const CHALLENGES=[
-    {id:'ch1',name:'Speed Runner',desc:'Kill 20 enemies in 60 seconds',type:'killTimer',target:20,time:60,reward:{gems:50}},
-    {id:'ch2',name:'Lucky Streak',desc:'Roll 5 rares+ in 30 rolls',type:'rareStreak',target:5,rolls:30,reward:{gems:80}},
-    {id:'ch3',name:'Tower Sprint',desc:'Climb 5 tower floors in one session',type:'towerClimb',target:5,reward:{gems:100,dust:500}},
-    {id:'ch4',name:'No Damage',desc:'Kill 10 enemies without dying',type:'noDeath',target:10,reward:{gems:150}},
-    {id:'ch5',name:'Enchant Gambler',desc:'Successfully enchant 3 times in a row',type:'enchantStreak',target:3,reward:{enchantStones:5}},
+    {id:'ch1',name:'Speed Runner',desc:'Kill 20 enemies in 60 seconds',type:'killTimer',target:20,time:60,reward:{gems:40,gold:2000}},
+    {id:'ch2',name:'Lucky Streak',desc:'Roll 5 rares+ in 30 rolls',type:'rareStreak',target:5,rolls:30,reward:{gems:60,dust:200}},
+    {id:'ch3',name:'Tower Sprint',desc:'Climb 5 tower floors in one session',type:'towerClimb',target:5,reward:{gems:80,dust:500}},
+    {id:'ch4',name:'No Damage',desc:'Kill 10 enemies without dying',type:'noDeath',target:10,reward:{gems:120,dust:300}},
+    {id:'ch5',name:'Enchant Gambler',desc:'Successfully enchant 3 times in a row',type:'enchantStreak',target:3,reward:{enchantStones:5,dust:800}},
 ];
 
 // === PROGRESSION LOCKS ===
@@ -712,8 +710,8 @@ const UNLOCK_REQS={
 
 // === MINIGAMES ===
 const MINIGAME_COOLDOWN=120000; // 2 min between plays
-const MEMORY_REWARDS={pairs3:{dust:30},pairs4:{dust:60,gems:5},pairs5:{dust:100,gems:10},pairs6:{dust:200,gems:20}};
-const FRENZY_TIERS=[{clicks:20,reward:{gold:500}},{clicks:40,reward:{gold:1500}},{clicks:60,reward:{gold:3000,gems:5}},{clicks:80,reward:{gold:5000,gems:10}},{clicks:100,reward:{gold:10000,gems:20}}];
+const MEMORY_REWARDS={pairs3:{dust:50},pairs4:{dust:100,gems:8},pairs5:{dust:200,gems:15},pairs6:{dust:400,gems:30}};
+const FRENZY_TIERS=[{clicks:20,reward:{gold:800}},{clicks:40,reward:{gold:2500}},{clicks:60,reward:{gold:5000,gems:8}},{clicks:80,reward:{gold:10000,gems:15}},{clicks:100,reward:{gold:20000,gems:30}}];
 
 // === SERVER EVENTS ===
 const SERVER_EVENTS=[
