@@ -4,6 +4,7 @@ function updateRes(){
     document.querySelector('[data-res="gems"]').textContent=fmt(S.gems);
     document.querySelector('[data-res="dust"]').textContent=fmt(S.dust);
     document.querySelector('[data-res="luck"]').textContent=getLuck().toFixed(1)+'x';
+    document.querySelector('[data-res="shards"]').textContent=fmt(S.artifactShards||0);
     document.getElementById('player-level').textContent=`Lv.${S.level}`;
     document.getElementById('xp-fill-mini').style.width=Math.min(100,(S.xp/xpFor(S.level))*100)+'%';
     const rb=document.getElementById('rebirth-badge');if(S.rebirths>0){rb.style.display='';rb.textContent=`R${S.rebirths}`;}else rb.style.display='none';
@@ -114,7 +115,7 @@ function renderInv(){
             const isEq=S.equippedAuras.some(e=>e.id===c.aId&&e.mod===c.mod);
             const m=c.mod?MODIFIERS.find(x=>x.id===c.mod):null;
             const card=document.createElement('div');card.className=`inv-card rarity-${a.rarity} ${m?m.css:''}`;
-            card.innerHTML=`${isEq?'<span class="equip-badge">EQ</span>':''}<span class="count-badge">x${c.cnt}</span><span class="item-icon">${a.icon}</span><div class="item-name">${a.name}</div><div class="item-rarity" style="color:${r.color}">${r.name}</div>${m?`<span class="item-modifier ${m.css}">${m.name}</span>`:''}<div class="item-power">⚔️${fmt(pw)} | ${a.ability.desc}</div>`;
+            card.innerHTML=`${isEq?'<span class="equip-badge">EQ</span>':''}<span class="count-badge">x${c.cnt}</span><span class="item-icon">${a.icon}</span><div class="item-name">${a.name}${isEq&&getAwakeningTier(c.aId,c.mod)>0?' '+'⭐'.repeat(getAwakeningTier(c.aId,c.mod)):''}</div><div class="item-rarity" style="color:${isEq&&getAwakeningData(c.aId,c.mod).color?getAwakeningData(c.aId,c.mod).color:r.color}">${isEq&&getAwakeningTier(c.aId,c.mod)>0?getAwakeningData(c.aId,c.mod).name+' ':'' }${r.name}</div>${m?`<span class="item-modifier ${m.css}">${m.name}</span>`:''}<div class="item-power">⚔️${fmt(pw)} | ${a.ability.desc}</div>`;
             card.addEventListener('click',()=>equipAura(c.aId,c.idx));
             card.addEventListener('contextmenu',e=>{e.preventDefault();unequipAura(c.aId,c.mod);});
             card.addEventListener('mouseenter',e=>{const a2=AURAS.find(x=>x.id===c.aId)||(S.hybrids&&S.hybrids[c.aId]);if(!a2)return;const r2=getRarity(a2.rarity);const dustVal=Math.floor((SELL_VAL[a2.rarity]||1)*(c.mod?MODIFIERS.find(x=>x.id===c.mod)?.pMult||1:1));showTooltip(e,`<div class="tt-name" style="color:${r2.color}">${a2.name}</div><div class="tt-rarity">${r2.name}${c.mod?' ['+c.mod+']':''}</div><div class="tt-power">Power: ${fmt(pw)}</div><div class="tt-ability">${a2.ability.desc||a2.ability.abilities?.map(x=>x.desc).join(' + ')}</div><div class="tt-mod">Left=Equip | Right=Unequip</div>`);});
@@ -251,8 +252,9 @@ function renderTower(){
         msHtml+=`<span style="color:${claimed?'#10b981':reached?'var(--legendary)':'var(--dim)'}">[F${ms.floor}${claimed?'✓':''}]</span> `;
     }
     msHtml+='</div>';
-    info.innerHTML=`<strong>🗼 Floor ${S.towerFloor}</strong><br>Guardian HP: ${fmt(enemy.hp)} | DMG: ${fmt(enemy.dmg)}<br>Reward: ${fmt(enemy.gold)}🪙 ${fmt(enemy.xp)}XP${S.towerFloor%5===0?' +'+S.towerFloor+'💎':''}${msHtml}`;
-    document.getElementById('tower-enemy').innerHTML=`<div style="font-size:3rem">🗼</div><div>Your Power: ${fmt(getTotalPower())} | DMG: ${fmt(getPlayerDmg())}</div>`;
+    info.innerHTML=`<strong>🗼 Floor ${S.towerFloor}</strong> | HP: ${fmt(enemy.hp)} | DMG: ${fmt(enemy.dmg)} | Reward: ${fmt(enemy.gold)}🪙 ${fmt(enemy.xp)}XP${S.towerFloor%5===0?' +'+S.towerFloor+'💎':''}${S.towerFloor%10===0?' +🏺Shards':''}${msHtml}`;
+    const preview=document.getElementById('tower-enemy-preview');
+    if(preview)preview.innerHTML=`<div style="text-align:center"><div style="font-size:2.5rem">🗼</div><div style="font-size:.75rem;color:var(--sub);margin-top:4px">Your DMG: ${fmt(getPlayerDmg())} | HP: ${fmt(S.hp)}/${fmt(getMaxHp())}</div></div>`;
 }
 function renderQuests(){
     const l=document.getElementById('quest-list');l.innerHTML='';
@@ -304,6 +306,7 @@ function renderShop(){
             else if(item.id==='aura_slots')preview=`${getAuraSlots()} → ${getAuraSlots()+1} slots`;
             else if(item.id==='inv_slots')preview=`Inv: ${getInvCapacity()} → ${getInvCapacity()+10}`;
             else if(item.id==='auto_sell_unlock')preview='Unlocks auto-sell feature';
+            else if(item.id==='artifact_slots')preview=`${getArtifactSlots()} → ${getArtifactSlots()+1} artifact slots`;
         }
         g.innerHTML+=`<div class="shop-card"><h4>${item.name}</h4><div class="shop-desc">${item.desc}</div><div class="shop-level">Lv${lv}/${item.max}</div>${preview?`<div class="shop-preview">${preview}</div>`:''}<div class="shop-cost">${mx?'MAX':`${ci}${fmt(cost)}`}</div><button class="shop-btn" ${!ok||mx?'disabled':''} data-s="${item.id}">${mx?'MAX':'Buy'}</button></div>`;
     }
@@ -318,7 +321,7 @@ function renderRebirth(){
 function renderAch(){const g=document.getElementById('achievements-grid');g.innerHTML='';for(const a of ACHIEVEMENTS){const done=S.achDone.includes(a.id);const rw=Object.entries(a.reward).map(([r,v])=>`${r==='gold'?'🪙':'💎'}${v}`).join(' ');g.innerHTML+=`<div class="achievement-card${done?' completed':''}"><div class="ach-name">${done?'✅':'⬜'}${a.name}</div><div class="ach-desc">${a.desc}</div><div class="ach-reward">${rw}</div></div>`;}}
 function renderStats(){const ss=getSessionStats();document.getElementById('stats-grid').innerHTML=`<div class="stat-row">🎲 Rolls: ${fmt(S.totalRolls)}</div><div class="stat-row">⚔️ Kills: ${fmt(S.killCount)}</div><div class="stat-row">⚡ Elites: ${fmt(S.eliteKills)}</div><div class="stat-row">💀 Bosses: ${S.bossKills}</div><div class="stat-row">🏰 Dungeons: ${S.dungeonsDone.length}</div><div class="stat-row">🗼 Tower: F${S.towerFloor}</div><div class="stat-row">🔄 Rebirths: ${S.rebirths}</div><div class="stat-row">📊 Level: ${S.level}</div><div class="stat-row">⚔️ Power: ${fmt(getTotalPower())}</div><div class="stat-row">🍀 Luck: ${getLuck().toFixed(1)}x</div><div class="stat-row">💰 RAP: ${fmt(getRAP())}</div><div class="stat-row">📦 Auras: ${Object.keys(S.auras).length}/${AURAS.length}</div><div class="stat-row">🐾 Pets: ${Object.keys(S.pets).length}/${PETS.length}</div><div class="stat-row">📜 Quests: ${S.questsDone.length}/${QUESTS.length}</div><div class="stat-row">🏅 Achievements: ${S.achDone.length}/${ACHIEVEMENTS.length}</div><div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)"><h4 style="margin-bottom:6px">📊 This Session</h4><div class="stat-row">⏱️ Time: ${ss.time}</div><div class="stat-row">🪙 Gold earned: ${fmt(ss.gold)}</div><div class="stat-row">⚔️ Kills: ${fmt(ss.kills)}</div><div class="stat-row">🎲 Rolls: ${fmt(ss.rolls)}</div><div class="stat-row">✨ Dust earned: ${fmt(ss.dust)}</div><div class="stat-row">🪙 Gold/min: ${fmt(ss.goldPerMin)}</div></div>`;}
 function renderRollZone(){const sel=document.getElementById('roll-zone-select');sel.innerHTML='';for(let i=0;i<ZONES.length;i++){const z=ZONES[i];if(i===0||getTotalPower()>=z.reqPower){const o=document.createElement('option');o.value=i;o.textContent=`${z.icon} ${z.name}`;if(i===S.rollZone)o.selected=true;sel.appendChild(o);}}}
-function renderAll(){updateRes();renderOdds();renderRollZone();renderCombatZoneSelect();renderCharacter();renderInv();renderIndex();renderEggs();renderCombat();renderZones();renderDungeons();renderTower();renderQuests();renderPotions();renderEnchantPanel();renderCraftPanel();renderSellPanel();renderPetLevelPanel();renderFusionSelects();renderGearUpgrades();renderHallOfFame();renderWheel();renderDaily();renderShop();renderRebirth();renderAch();renderStats();renderTrade();renderWorldBoss();renderAscension();checkNotifications();
+function renderAll(){updateRes();renderOdds();renderRollZone();renderCombatZoneSelect();renderCharacter();renderInv();renderIndex();renderEggs();renderCombat();renderZones();renderDungeons();renderTower();renderQuests();renderPotions();renderEnchantPanel();renderCraftPanel();renderSellPanel();renderPetLevelPanel();renderFusionSelects();renderGearUpgrades();renderHallOfFame();renderWheel();renderDaily();renderShop();renderRebirth();renderAch();renderStats();renderTrade();renderWorldBoss();renderAscension();renderArtifacts();renderAwakening();renderBattlePass();renderBossRush();checkNotifications();
     document.getElementById('roll-total').textContent=fmt(S.totalRolls);document.getElementById('roll-pity').textContent=S.pity;document.getElementById('pity-max').textContent=getPityMax();document.getElementById('roll-luck').textContent=getLuck().toFixed(1)+'x';document.getElementById('roll-dry').textContent=S.dryStreak||0;const best=getRarity(S.bestRarity);document.getElementById('roll-best').textContent=best.name;document.getElementById('roll-best').style.color=best.color;
     // Auto roll button state
     const autoBtn=document.getElementById('btn-auto-roll');
@@ -567,9 +570,11 @@ function hitWorldBoss(){
     if(S.worldBoss.hp<=0){
         S.gold+=wb.rewards.gold;S.totalGold+=wb.rewards.gold;
         S.gems+=wb.rewards.gems;S.dust+=wb.rewards.dust;S.totalDust+=wb.rewards.dust;
+        // Artifact shards from world boss (5-15)
+        const wbShards=5+Math.floor(Math.random()*11);S.artifactShards=(S.artifactShards||0)+wbShards;bpTrack('shards',wbShards);bpTrack('worldboss',1);
         S.wbKills=(S.wbKills||0)+1;
         const timeStr=Math.floor(elapsed)+'s';
-        toast(`🎉 ${wb.name} DEFEATED in ${timeStr}! +${fmt(wb.rewards.gold)}🪙 +${wb.rewards.gems}💎 +${wb.rewards.dust}✨`);
+        toast(`🎉 ${wb.name} DEFEATED in ${timeStr}! +${fmt(wb.rewards.gold)}🪙 +${wb.rewards.gems}💎 +${wb.rewards.dust}✨ +${wbShards}🏺`);
         S.worldBoss=null;S.worldBossCd=Date.now()+600000;
         if(wbAutoInterval){clearInterval(wbAutoInterval);wbAutoInterval=null;}
         checkAch();
@@ -732,6 +737,9 @@ function tryAutoSell(auraId){
     let dv=SELL_VAL[a.rarity]||1;
     if(entries[idx].mod){const m=MODIFIERS.find(x=>x.id===entries[idx].mod);if(m)dv*=m.pMult;}
     dv=Math.floor(dv*getEventBonus('sellMult'));
+    // Artifact: Dust Devil (bonus dust from auto-sell)
+    const dustBonus=hasArtifactProc('dustBonus');
+    if(dustBonus)dv=Math.floor(dv*(1+dustBonus));
     entries.splice(idx,1);if(!entries.length)delete S.auras[auraId];
     S.dust+=dv;S.totalDust+=dv;
 }
@@ -927,3 +935,191 @@ function renderPetLevelPanel(){
         grid.appendChild(card);
     }
 }
+
+// === ARTIFACT RENDERING ===
+function renderArtifacts(){
+    const shardEl=document.getElementById('artifact-shard-count');
+    const slotEl=document.getElementById('artifact-slot-display');
+    const equippedEl=document.getElementById('artifact-equipped');
+    const ownedEl=document.getElementById('artifact-owned');
+    const craftEl=document.getElementById('artifact-craft-grid');
+    if(!shardEl||!craftEl)return;
+
+    shardEl.textContent=fmt(S.artifactShards||0);
+    slotEl.textContent=`${S.equippedArtifacts.length}/${getArtifactSlots()}`;
+
+    // Equipped artifacts
+    equippedEl.innerHTML='';
+    for(let i=0;i<getArtifactSlots();i++){
+        if(i<S.equippedArtifacts.length){
+            const aId=S.equippedArtifacts[i];
+            const a=ARTIFACTS.find(x=>x.id===aId);
+            const lvl=getArtifactLevel(aId);
+            const val=getArtifactValue(aId);
+            const r=getRarity(a.rarity);
+            equippedEl.innerHTML+=`<div class="inv-card rarity-${a.rarity}" style="cursor:pointer;min-width:120px" onclick="unequipArtifact('${aId}')"><span class="item-icon">${a.icon}</span><div class="item-name">${a.name}</div><div class="item-rarity" style="color:${r.color}">Lv.${lvl} ${r.name}</div><div class="item-power" style="font-size:.6rem">${a.desc.replace(/\d+%?/,Math.round(val*100)+'%')}</div><div style="font-size:.55rem;color:var(--dim)">Click to unequip</div></div>`;
+        } else {
+            equippedEl.innerHTML+=`<div class="inv-card" style="opacity:.4;min-width:120px"><span class="item-icon">🏺</span><div class="item-name" style="color:var(--dim)">Empty Slot</div></div>`;
+        }
+    }
+
+    // Owned (unequipped)
+    ownedEl.innerHTML='';
+    const ownedIds=Object.keys(S.ownedArtifacts||{}).filter(id=>!S.equippedArtifacts.includes(id));
+    if(!ownedIds.length)ownedEl.innerHTML='<span style="font-size:.7rem;color:var(--dim)">No unequipped artifacts</span>';
+    for(const aId of ownedIds){
+        const a=ARTIFACTS.find(x=>x.id===aId);if(!a)continue;
+        const lvl=getArtifactLevel(aId);
+        const r=getRarity(a.rarity);
+        const canLevel=lvl<5&&(S.artifactShards||0)>=ARTIFACT_LEVEL_SHARDS[lvl-1];
+        ownedEl.innerHTML+=`<div class="inv-card rarity-${a.rarity}" style="min-width:140px"><span class="item-icon">${a.icon}</span><div class="item-name">${a.name}</div><div class="item-rarity" style="color:${r.color}">Lv.${lvl}/5 ${r.name}</div><div class="item-power" style="font-size:.6rem">${a.desc}</div><div style="display:flex;gap:4px;margin-top:4px"><button class="btn-sm" onclick="equipArtifact('${aId}')" style="font-size:.58rem;padding:1px 4px">Equip</button><button class="btn-sm" onclick="levelArtifact('${aId}')" ${canLevel?'':'disabled'} style="font-size:.58rem;padding:1px 4px">⬆️ Lv.Up (${lvl<5?ARTIFACT_LEVEL_SHARDS[lvl-1]:'MAX'}🏺)</button></div></div>`;
+    }
+
+    // Craftable (not yet owned)
+    craftEl.innerHTML='';
+    const locked=S.level<ARTIFACT_UNLOCK_LEVEL;
+    if(locked){craftEl.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:20px">🔒 Artifacts unlock at Lv.${ARTIFACT_UNLOCK_LEVEL}</div>`;return;}
+    for(const a of ARTIFACTS){
+        if(S.ownedArtifacts&&S.ownedArtifacts[a.id])continue;
+        const r=getRarity(a.rarity);
+        const canAfford=(S.artifactShards||0)>=a.shardCost;
+        craftEl.innerHTML+=`<div class="inv-card rarity-${a.rarity}" style="opacity:${canAfford?1:0.6}"><span class="item-icon">${a.icon}</span><div class="item-name">${a.name}</div><div class="item-rarity" style="color:${r.color}">${r.name}</div><div class="item-power" style="font-size:.6rem">${a.desc}</div><div style="margin-top:4px"><button class="btn-sm" onclick="craftArtifact('${a.id}')" ${canAfford?'':'disabled'} style="font-size:.6rem;padding:2px 6px">🏺 Craft (${a.shardCost} shards)</button></div></div>`;
+    }
+}
+
+// === AWAKENING RENDERING ===
+function renderAwakening(){
+    const grid=document.getElementById('awakening-grid');if(!grid)return;
+    grid.innerHTML='';
+    if(S.level<AWAKENING_UNLOCK_LEVEL){grid.innerHTML=`<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:20px">🔒 Awakening unlocks at Lv.${AWAKENING_UNLOCK_LEVEL}</div>`;return;}
+    if(!S.equippedAuras.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--dim);padding:20px">Equip auras first to awaken them!</div>';return;}
+    for(const eq of S.equippedAuras){
+        const a=AURAS.find(x=>x.id===eq.id)||(S.hybrids&&S.hybrids[eq.id]);if(!a)continue;
+        const r=getRarity(a.rarity);
+        const tier=getAwakeningTier(eq.id,eq.mod);
+        const tierData=AWAKENING_TIERS[tier];
+        const nextTier=tier<3?AWAKENING_TIERS[tier+1]:null;
+        // Count available dupes
+        const entries=S.auras[eq.id]||[];
+        const dupeCount=entries.filter(e=>{
+            const eMod=e.mod||null;const tMod=eq.mod||null;
+            if(eMod!==tMod)return false;
+            return !S.equippedAuras.some(x=>x.id===eq.id&&x.mod===eMod);
+        }).length;
+        const stars='⭐'.repeat(tier);
+        const canAwaken=nextTier&&dupeCount>=nextTier.dupeCost&&S.dust>=nextTier.dustCost;
+        let statusHtml;
+        if(!nextTier){statusHtml='<div style="color:#ec4899;font-weight:700;font-size:.7rem">MAX — Transcended</div>';}
+        else{statusHtml=`<div style="font-size:.65rem;color:var(--sub)">Next: ${nextTier.name} (${nextTier.dupeCost} dupes + ${fmt(nextTier.dustCost)}✨)</div><div style="font-size:.62rem;color:var(--dim)">Dupes: ${dupeCount}/${nextTier.dupeCost} | Dust: ${fmt(S.dust)}/${fmt(nextTier.dustCost)}</div>`;}
+        grid.innerHTML+=`<div class="inv-card rarity-${a.rarity}" style="min-width:150px"><span class="item-icon">${a.icon}</span><div class="item-name" style="color:${tierData.color||r.color}">${a.name} ${stars}</div><div class="item-rarity" style="color:${tierData.color||r.color}">${tierData.name||r.name} (${tierData.abilityMult}x)</div><div class="item-power" style="font-size:.6rem">${a.ability.desc}</div>${statusHtml}${nextTier?`<button class="btn-sm" onclick="awakenAura('${eq.id}','${eq.mod||''}')" ${canAwaken?'':'disabled'} style="font-size:.6rem;padding:2px 6px;margin-top:4px">⭐ Awaken</button>`:''}</div>`;
+    }
+}
+
+// === BATTLE PASS RENDERING ===
+function renderBattlePass(){
+    const levelEl=document.getElementById('bp-level-display');
+    const maxEl=document.getElementById('bp-max-level');
+    const xpFill=document.getElementById('bp-xp-fill');
+    const xpText=document.getElementById('bp-xp-text');
+    const dailyEl=document.getElementById('bp-daily-challenges');
+    const weeklyEl=document.getElementById('bp-weekly-challenges');
+    const rewardsEl=document.getElementById('bp-rewards');
+    const premBadge=document.getElementById('bp-premium-badge');
+    const premBtn=document.getElementById('btn-buy-premium');
+    if(!levelEl||!dailyEl)return;
+
+    initBattlePass();
+
+    levelEl.textContent=S.bpLevel||0;
+    maxEl.textContent=BP_MAX_LEVEL;
+    const pct=S.bpLevel>=BP_MAX_LEVEL?100:Math.min(100,((S.bpXp||0)/BP_XP_PER_LEVEL)*100);
+    xpFill.style.width=pct+'%';
+    xpText.textContent=S.bpLevel>=BP_MAX_LEVEL?'MAX!':`${S.bpXp||0}/${BP_XP_PER_LEVEL}`;
+    if(premBadge)premBadge.style.display=S.bpPremium?'inline':'none';
+    if(premBtn)premBtn.style.display=S.bpPremium?'none':'';
+
+    // Daily timer
+    document.getElementById('bp-daily-timer').textContent=`(resets in ${getBpDailyTimeRemaining()})`;
+    document.getElementById('bp-weekly-timer').textContent=`(resets in ${getBpWeeklyTimeRemaining()})`;
+
+    // Daily challenges
+    dailyEl.innerHTML='';
+    for(const ch of (S.bpDailyChallenges||[])){
+        const def=BP_DAILY_POOL.find(x=>x.id===ch.id);if(!def)continue;
+        const progress=Math.min(ch.progress||0,def.target);
+        const cpct=Math.min(100,(progress/def.target)*100);
+        dailyEl.innerHTML+=`<div style="background:var(--bg3);border-radius:6px;padding:6px 8px;opacity:${ch.completed?'0.5':'1'}"><div style="display:flex;justify-content:space-between"><span style="font-size:.72rem;font-weight:600">${ch.completed?'✅ ':''}${def.name}</span><span style="font-size:.62rem;color:var(--glow)">+${def.xp} XP</span></div><div style="font-size:.65rem;color:var(--sub)">${def.desc}</div><div style="height:4px;background:var(--bg1);border-radius:2px;margin-top:3px"><div style="height:100%;width:${cpct}%;background:${ch.completed?'#10b981':'var(--accent)'}"></div></div><div style="font-size:.58rem;color:var(--dim)">${fmt(progress)}/${fmt(def.target)}</div></div>`;
+    }
+
+    // Weekly challenges
+    weeklyEl.innerHTML='';
+    for(const ch of (S.bpWeeklyChallenges||[])){
+        const def=BP_WEEKLY_POOL.find(x=>x.id===ch.id);if(!def)continue;
+        const progress=Math.min(ch.progress||0,def.target);
+        const cpct=Math.min(100,(progress/def.target)*100);
+        weeklyEl.innerHTML+=`<div style="background:var(--bg3);border-radius:6px;padding:6px 8px;opacity:${ch.completed?'0.5':'1'}"><div style="display:flex;justify-content:space-between"><span style="font-size:.72rem;font-weight:600">${ch.completed?'✅ ':''}${def.name}</span><span style="font-size:.62rem;color:var(--glow)">+${def.xp} XP</span></div><div style="font-size:.65rem;color:var(--sub)">${def.desc}</div><div style="height:4px;background:var(--bg1);border-radius:2px;margin-top:3px"><div style="height:100%;width:${cpct}%;background:${ch.completed?'#10b981':'var(--accent)'}"></div></div><div style="font-size:.58rem;color:var(--dim)">${fmt(progress)}/${fmt(def.target)}</div></div>`;
+    }
+
+    // Rewards grid (free + premium tracks)
+    rewardsEl.innerHTML='';
+    for(const t of BP_REWARDS){
+        const reached=(S.bpLevel||0)>=t.level;
+        const freeClaimed=(S.bpClaimedFree||[]).includes(t.level);
+        const premClaimed=(S.bpClaimedPremium||[]).includes(t.level);
+        const freeRw=Object.entries(t.free).map(([r,v])=>`${v} ${r}`).join(', ');
+        const premRw=Object.entries(t.premium).map(([r,v])=>`${v} ${r}`).join(', ');
+        rewardsEl.innerHTML+=`<div style="background:var(--bg3);border-radius:6px;padding:6px;text-align:center;border:2px solid ${reached?'var(--accent)':'var(--border)'}">
+            <div style="font-size:.75rem;font-weight:700">Lv.${t.level}</div>
+            <div style="margin-top:4px;padding:3px;background:var(--bg2);border-radius:4px"><div style="font-size:.58rem;color:var(--sub)">FREE</div><div style="font-size:.6rem">${freeRw}</div>${freeClaimed?'<div style="font-size:.55rem;color:#10b981">✅</div>':reached?`<button class="btn-sm" onclick="claimBpReward(${t.level},'free')" style="font-size:.55rem;padding:0 4px;margin-top:2px">Claim</button>`:''}
+            </div>
+            <div style="margin-top:3px;padding:3px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(236,72,153,.1));border-radius:4px;border:1px solid ${S.bpPremium?'#f59e0b':'var(--border)'}"><div style="font-size:.58rem;color:#f59e0b">⭐ PREMIUM</div><div style="font-size:.6rem">${premRw}</div>${premClaimed?'<div style="font-size:.55rem;color:#10b981">✅</div>':reached&&S.bpPremium?`<button class="btn-sm" onclick="claimBpReward(${t.level},'premium')" style="font-size:.55rem;padding:0 4px;margin-top:2px">Claim</button>`:!S.bpPremium?'<div style="font-size:.55rem;color:var(--dim)">🔒</div>':''}
+            </div>
+        </div>`;
+    }
+}
+
+// === BOSS RUSH RENDERING ===
+function renderBossRush(){
+    const container=document.getElementById('boss-rush-content');if(!container)return;
+    if(!bossRushActive){
+        // Idle state
+        const cd=S.bossRushCd||0;const onCd=Date.now()<cd;
+        const rem=onCd?Math.ceil((cd-Date.now())/1000):0;
+        const remStr=onCd?`${Math.floor(rem/60)}:${(rem%60).toString().padStart(2,'0')}`:'';
+        container.innerHTML=`<div style="text-align:center;padding:20px">
+            <div style="font-size:2.5rem;margin-bottom:8px">🏆</div>
+            <h3>Boss Rush</h3>
+            <p style="font-size:.75rem;color:var(--sub);margin:8px 0">Fight 10 escalating bosses back-to-back. No healing between waves. How far can you go?</p>
+            <div style="font-size:.72rem;margin:8px 0">Best: <strong>Wave ${S.bossRushBest||0}</strong>/10</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;font-size:.62rem;color:var(--dim)">
+                ${BOSS_RUSH_MILESTONES.map(ms=>`<span style="padding:2px 6px;background:var(--bg3);border-radius:4px${(S.bossRushBest||0)>=ms.wave?';border:1px solid var(--accent)':''}">W${ms.wave}: ${Object.entries(ms.reward).map(([r,v])=>fmt(v)+' '+r).join(', ')}</span>`).join('')}
+            </div>
+            ${onCd?`<div style="color:var(--sub);font-size:.75rem;margin:8px 0">⏱️ ${remStr}</div>`:''}
+            <button class="btn-fight" onclick="startBossRush()" ${onCd||S.level<BOSS_RUSH_UNLOCK_LEVEL?'disabled':''}>${S.level<BOSS_RUSH_UNLOCK_LEVEL?`🔒 Lv.${BOSS_RUSH_UNLOCK_LEVEL}`:'⚔️ Start Rush'}</button>
+        </div>`;
+        return;
+    }
+    // Active state
+    const w=bossRushActive.wave;
+    const def=w<=BOSS_RUSH_ENEMIES.length?BOSS_RUSH_ENEMIES[w-1]:null;
+    const hpPct=def?Math.max(0,(bossRushActive.hp/bossRushActive.maxHp)*100):0;
+    const pHpPct=Math.max(0,(bossRushActive.playerHp/getMaxHp())*100);
+    const rwStr=`${fmt(bossRushActive.rewards.gold)}🪙 ${bossRushActive.rewards.gems}💎 ${bossRushActive.rewards.artifactShards}🏺`;
+    container.innerHTML=`<div style="text-align:center;padding:10px">
+        <div style="font-size:.75rem;color:var(--sub);margin-bottom:6px">Wave ${w}/${BOSS_RUSH_ENEMIES.length} | Loot: ${rwStr}</div>
+        ${def?`<div style="font-size:2.5rem">${def.icon}</div>
+        <div style="font-size:1rem;font-weight:700;margin:4px 0">${def.name}</div>
+        <div style="height:12px;background:var(--bg3);border-radius:6px;overflow:hidden;margin:6px 0"><div style="height:100%;width:${hpPct}%;background:linear-gradient(90deg,#ef4444,#f59e0b);transition:width .1s"></div></div>
+        <div style="font-size:.7rem;color:var(--dim)">${fmt(Math.max(0,bossRushActive.hp))} / ${fmt(bossRushActive.maxHp)}</div>`:''}
+        <div style="margin-top:10px;font-size:.72rem">❤️ Your HP</div>
+        <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin:4px 0"><div style="height:100%;width:${pHpPct}%;background:#10b981;transition:width .1s"></div></div>
+        <div style="font-size:.65rem;color:var(--dim)">${fmt(Math.max(0,bossRushActive.playerHp))} / ${fmt(getMaxHp())}</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:10px">
+            <button class="btn-fight" onclick="hitBossRush()">⚔️ Attack</button>
+            <button class="btn-fight btn-auto-fight" onclick="toggleBossRushAuto()">⚡ Auto</button>
+            <button class="btn-sm btn-danger" onclick="endBossRush(false)" style="font-size:.65rem">🏳️ Flee</button>
+        </div>
+    </div>`;
+}
+
+

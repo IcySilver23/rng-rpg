@@ -7,18 +7,25 @@ function doRoll(auto){
     if(isInvFull()){toast('❌ Inventory full! Sell or craft auras.');return;}
     if(!auto){rollCdUntil=Date.now()+getCdMs();document.getElementById('btn-roll').disabled=true;setTimeout(()=>{document.getElementById('btn-roll').disabled=false;},getCdMs());}
 
-    const count=auto?1:getMultiRollCount();
+    const count=getMultiRollCount();
     let bestAura=null,bestMod=null,bestRarity='common',totalNew=0;
     const allResults=[];
     trackSessionRoll();
+    bpTrack('rolls',count);
 
     for(let roll=0;roll<count;roll++){
     const luck=getLuck();
     S.totalRolls++;S.pity++;
+    // Artifact: Pity Breaker (fills pity faster)
+    const pitySpd=hasArtifactProc('pitySpeed');
+    if(pitySpd)S.pity+=Math.floor(pitySpd-1); // adds extra pity ticks
 
     // Determine rarity
     let rarity='common';const pMax=getPityMax();
-    if(S.pity>=pMax){S.pity=0;const r=Math.random()*100;if(r<2)rarity='mythic';else if(r<10)rarity='legendary';else if(r<35)rarity='epic';else rarity='rare';}
+    // Artifact: Lucky Charm (guaranteed rare+ every N rolls)
+    const luckyCharmN=hasArtifactProc('guaranteedRare');
+    if(luckyCharmN&&S.totalRolls%Math.floor(luckyCharmN)===0){rarity='rare';}
+    else if(S.pity>=pMax){S.pity=0;const r=Math.random()*100;if(r<2)rarity='mythic';else if(r<10)rarity='legendary';else if(r<35)rarity='epic';else rarity='rare';}
     else{const roll=Math.random();for(let i=RARITIES.length-1;i>=0;i--){
         const effChance=Math.min(0.5,luck/RARITIES[i].chance); // cap at 50% per tier
         if(roll<effChance){rarity=RARITIES[i].id;break;}
@@ -81,7 +88,11 @@ function doRoll(auto){
     if(ri(bestRarity)>=ri('legendary'))screenFlash(getRarity(bestRarity).color);
     if(bestMod){const modData=MODIFIERS.find(m=>m.id===bestMod);screenFlash(modData.color);sfxSuccess();toast(`✨ MODIFIER: ${modData.name}! (${modData.pMult}x Power)`);}
     updateLuckBar();
-    if(auto){showResult(bestAura,bestMod,bestRarity,null);if(ri(bestRarity)>=ri('mythic')&&getSetting('celebration'))showCelebration(bestAura,bestMod,bestRarity);}
+    if(auto){
+        if(count>1){showMultiResults(allResults);}
+        else{showResult(bestAura,bestMod,bestRarity,null);}
+        if(ri(bestRarity)>=ri('mythic')&&getSetting('celebration'))showCelebration(bestAura,bestMod,bestRarity);
+    }
     else{
         if(count>1){showMultiResults(allResults);}
         else if(!getSetting('animations')){showResult(bestAura,bestMod,bestRarity,null);}
@@ -238,7 +249,9 @@ function spawnEnemy(){
     const pool=Math.random()<0.12?zone.enemies:nb;
     const base=pool[Math.floor(Math.random()*pool.length)];
     curElite=null;
-    if(!base.boss&&Math.random()<0.15)curElite=ELITE_MODS[Math.floor(Math.random()*ELITE_MODS.length)];
+    // Rift zone: enemies always have a random modifier
+    if(zone.riftMods){curElite=ELITE_MODS[Math.floor(Math.random()*ELITE_MODS.length)];}
+    else if(!base.boss&&Math.random()<0.15)curElite=ELITE_MODS[Math.floor(Math.random()*ELITE_MODS.length)];
     let hM=1,dM=1,gM=1,xM=1;
     if(curElite){switch(curElite){case'Enraged':dM=2;gM=1.5;xM=1.5;break;case'Armored':hM=2.5;gM=2;xM=2;break;case'Swift':dM=1.5;hM=0.7;gM=1.3;xM=1.3;break;case'Glowing':gM=3;xM=2;break;case'Cursed':hM=1.5;dM=1.5;gM=2.5;xM=2.5;break;}}
     curEnemy={...base,hp:Math.floor(base.hp*hM),dmg:Math.floor(base.dmg*dM),gold:Math.floor(base.gold*gM),xp:Math.floor(base.xp*xM),elite:curElite};
@@ -258,25 +271,55 @@ function doFight(){
     const log=document.getElementById('combat-log');
     let d=getPlayerDmg(),crit=Math.random()<getCrit();
     if(S.critBurst>0){crit=true;S.critBurst--;}
-    if(crit)d*=2;d=Math.floor(d*(0.85+Math.random()*0.3));
+    // Artifact: Critical Mass (crit multiplier)
+    const critMultArt=hasArtifactProc('critMult');
+    if(crit)d*=(critMultArt||2);
+    // Artifact: Blood Pact (bonus dmg)
+    const bloodPact=hasArtifactProc('bloodPact');
+    if(bloodPact)d*=(1+bloodPact);
+    d=Math.floor(d*(0.85+Math.random()*0.3));
+    // Artifact: Shatter (ignore defense — applied to enemy, reduces effective HP)
+    const shatterChance=hasArtifactProc('ignoreDefense');
+    if(shatterChance&&Math.random()<shatterChance){d=Math.floor(d*1.5);addLog(log,'💎 SHATTER!','log-drop');}
     curEnemyHp-=d;trackDps(d,0);addLog(log,`${fmt(d)}${crit?' CRIT!':''}`,crit?'log-drop':'log-hit');sfxHit();
+    // Artifact: Echo Strike (attack twice)
+    const echoChance=hasArtifactProc('echoStrike');
+    if(echoChance&&Math.random()<echoChance){const d2=Math.floor(d*0.7);curEnemyHp-=d2;trackDps(d2,0);addLog(log,`⚔️ ECHO ${fmt(d2)}`,'log-drop');}
     const ls=getLifesteal();if(ls>0)S.hp=Math.min(getMaxHp(),S.hp+Math.floor(d*ls));
     if(curEnemyHp<=0){
         const gB=Date.now()<S.goldBurstEnd?5:1;
-        const gE=Math.floor(curEnemy.gold*getGoldMult()*gB);S.gold+=gE;S.totalGold+=gE;S.killCount++;
-        if(curEnemy.elite)S.eliteKills++;
-        if(curEnemy.boss)S.bossKills++;
+        let gE=Math.floor(curEnemy.gold*getGoldMult()*gB);
+        // Artifact: Midas Touch (chance to double gold)
+        const midasChance=hasArtifactProc('onKillGold');
+        if(midasChance&&Math.random()<midasChance){gE*=2;addLog(log,'👑 MIDAS!','log-gold');}
+        S.gold+=gE;S.totalGold+=gE;S.killCount++;
+        if(curEnemy.elite){S.eliteKills++;bpTrack('elites',1);}
+        if(curEnemy.boss){S.bossKills++;bpTrack('bosses',1);
+            // Artifact shard drops from bosses
+            const shards=1+Math.floor(Math.random()*2);S.artifactShards=(S.artifactShards||0)+shards;bpTrack('shards',shards);addLog(log,`🏺 +${shards} Shard${shards>1?'s':''}!`,'log-drop');
+        }
         trackDps(0,gE);trackSessionGold(gE);trackSessionKill();
+        bpTrack('kills',1);bpTrack('gold',gE);
         grantXp(curEnemy.xp);addLog(log,`${curEnemy.name}! +${fmt(gE)}🪙`,'log-kill');
+        // Artifact: Soul Siphon (heal on kill)
+        const healAmt=hasArtifactProc('onKillHeal');
+        if(healAmt){S.hp=Math.min(getMaxHp(),S.hp+Math.floor(getMaxHp()*healAmt));}
         if(curEnemy.boss){const gb=Math.floor(gE/8);S.gems+=gb;if(!S.bossesDefeated.includes(curEnemy.name))S.bossesDefeated.push(curEnemy.name);addLog(log,`BOSS +${fmt(gb)}💎`,'log-drop');}
-        let dr=ZONES[S.currentZone].gearDrop*getGearDrop();if(curEnemy.elite)dr*=2;
+        let dr=ZONES[S.currentZone].gearDrop*getGearDrop();
+        // Artifact: Treasure Hunter
+        const gearBoost=hasArtifactProc('gearDropBoost');
+        if(gearBoost)dr*=(1+gearBoost);
+        if(curEnemy.elite)dr*=2;
         if(Math.random()<dr){const zg=GEAR.filter(g=>g.zone===S.currentZone);if(zg.length){const g=rollGear(zg);if(!S.gear[g.id])S.gear[g.id]=0;S.gear[g.id]++;addLog(log,`GEAR: ${g.name}!`,'log-drop');toast(`Gear: ${g.name}`);}}
         // Enchant stone drop (2% from elites, 0.5% from normal)
         const stoneDrop=curEnemy.elite?0.02:0.005;
         if(Math.random()<stoneDrop){S.enchantStones=(S.enchantStones||0)+1;addLog(log,'🔮 Enchant Stone dropped!','log-drop');toast('🔮 Enchant Stone!');}
         curEnemy=null;curEnemyHp=0;setTimeout(()=>{if(S.hp>0)spawnEnemy();},200);
     } else {
-        const eD=Math.floor(curEnemy.dmg*(0.8+Math.random()*0.4));const def=getDef();const act=Math.max(1,eD-def);
+        const eD=Math.floor(curEnemy.dmg*(0.8+Math.random()*0.4));const def=getDef();
+        let act=Math.max(1,eD-def);
+        // Artifact: Blood Pact (take more damage)
+        if(bloodPact)act=Math.floor(act*(1+bloodPact*0.5));
         S.hp-=act;addLog(log,`-${fmt(act)} HP`,'');
         if(S.hp<=0){addLog(log,'DIED!','log-hit');S.hp=getMaxHp();curEnemy=null;curEnemyHp=0;setTimeout(spawnEnemy,800);}
     }
@@ -318,31 +361,105 @@ function deactivatePet(pid){
     renderInv();updateRes();save();
 }
 
-// === DUNGEONS ===
-function startDungeon(id){const d=DUNGEONS.find(x=>x.id===id);if(!d||getTotalPower()<d.reqPower||Date.now()<(S.dungeonCds[id]||0))return;dgActive={id,hp:d.boss.hp,max:d.boss.hp,end:Date.now()+d.time*1000};document.getElementById('dungeon-list').style.display='none';document.getElementById('dungeon-active').style.display='block';document.getElementById('dungeon-boss-name').textContent=`${d.boss.icon} ${d.boss.name}`;renderDgState();if(dgInterval)clearInterval(dgInterval);dgInterval=setInterval(dgTick,100);}
-function dgTick(){if(!dgActive)return;const rem=dgActive.end-Date.now();if(rem<=0){clearInterval(dgInterval);dgInterval=null;toast('Failed!');dgActive=null;document.getElementById('dungeon-active').style.display='none';document.getElementById('dungeon-list').style.display='flex';renderDungeons();return;}document.getElementById('dungeon-timer').textContent=`⏱️${Math.ceil(rem/1000)}s`;renderDgState();}
-function dgHit(){if(!dgActive)return;let d=getPlayerDmg();if(Math.random()<getCrit())d*=2;d=Math.floor(d*(0.85+Math.random()*0.3));dgActive.hp-=d;if(dgActive.hp<=0){clearInterval(dgInterval);dgInterval=null;const dg=DUNGEONS.find(x=>x.id===dgActive.id);S.gold+=dg.rewards.gold;S.totalGold+=dg.rewards.gold;S.gems+=dg.rewards.gems;if(dg.rewards.gear){if(!S.gear[dg.rewards.gear])S.gear[dg.rewards.gear]=0;S.gear[dg.rewards.gear]++;toast(`Clear! Got ${GEAR.find(x=>x.id===dg.rewards.gear).name}!`);}if(!S.dungeonsDone.includes(dgActive.id))S.dungeonsDone.push(dgActive.id);S.dungeonCds[dgActive.id]=Date.now()+300000;dgActive=null;document.getElementById('dungeon-active').style.display='none';document.getElementById('dungeon-list').style.display='flex';renderDungeons();updateRes();checkQuests();checkAch();save();}renderDgState();}
-function renderDgState(){if(!dgActive)return;document.getElementById('dungeon-hp-fill').style.width=Math.max(0,(dgActive.hp/dgActive.max)*100)+'%';document.getElementById('dungeon-hp-text').textContent=`${fmt(Math.max(0,dgActive.hp))}/${fmt(dgActive.max)}`;}
+// === DUNGEONS (legacy stubs — new system in game.js) ===
+function startDungeon(id){startDungeonRun(id);}
+function dgTick(){}
+function dgHit(){}
+function renderDgState(){}
 
 // === TOWER ===
 function getTowerEnemy(){const f=S.towerFloor;return{name:`Floor ${f} Guardian`,icon:'🗼',hp:Math.floor(80*Math.pow(1.45,f)),dmg:Math.floor(8*Math.pow(1.28,f)),gold:Math.floor(30*Math.pow(1.35,f)),xp:Math.floor(20*Math.pow(1.3,f))};}
-function doTowerFight(){
+// === TOWER COMBAT SYSTEM ===
+let towerBattle=null; // {hp, maxHp, dmg, gold, xp, playerHp}
+let towerAutoInterval=null;
+
+function startTowerFight(){
     if(!isUnlocked('tower')){toast(`🔒 Tower unlocks at Lv.${UNLOCK_REQS.tower}`);return;}
-    const enemy=getTowerEnemy();
-    const pDmg=getPlayerDmg();const hits=Math.ceil(enemy.hp/pDmg);
-    const eDmg=enemy.dmg*hits;const survive=S.hp>eDmg-getDef()*hits;
-    if(pDmg>=enemy.hp*0.1||survive){
-        S.towerFloor++;S.gold+=enemy.gold;S.totalGold+=enemy.gold;grantXp(enemy.xp);
+    if(towerBattle){toast('Already fighting!');return;}
+    const base=getTowerEnemy();
+    towerBattle={
+        hp:base.hp,maxHp:base.hp,dmg:base.dmg,gold:base.gold,xp:base.xp,
+        playerHp:S.hp>0?S.hp:getMaxHp()
+    };
+    document.getElementById('tower-battle').style.display='block';
+    document.getElementById('tower-idle').style.display='none';
+    renderTowerBattle();
+}
+
+function hitTower(){
+    if(!towerBattle)return;
+    const log=document.getElementById('tower-log');
+    // Player attacks
+    let d=getPlayerDmg();
+    if(Math.random()<getCrit()){const critM=hasArtifactProc('critMult');d*=(critM||2);}
+    d=Math.floor(d*(0.85+Math.random()*0.3));
+    const echoChance=hasArtifactProc('echoStrike');
+    if(echoChance&&Math.random()<echoChance){d=Math.floor(d*1.7);}
+    towerBattle.hp-=d;
+    addLog(log,`${fmt(d)} DMG`,'log-hit');
+    // Enemy attacks
+    const eDmg=Math.floor(towerBattle.dmg*(0.8+Math.random()*0.4));
+    const actual=Math.max(1,eDmg-getDef());
+    towerBattle.playerHp-=actual;
+    // Lifesteal
+    const ls=getLifesteal();if(ls>0)towerBattle.playerHp=Math.min(getMaxHp(),towerBattle.playerHp+Math.floor(d*ls));
+    // Floor cleared?
+    if(towerBattle.hp<=0){
+        S.gold+=towerBattle.gold;S.totalGold+=towerBattle.gold;grantXp(towerBattle.xp);
+        bpTrack('tower',1);
         if(S.towerFloor%5===0)S.gems+=S.towerFloor;
-        toast(`Tower F${S.towerFloor-1} cleared! +${fmt(enemy.gold)}🪙`);
-        // Check milestones
+        // Artifact shards every 10 floors
+        if(S.towerFloor%10===0){const sh=2+Math.floor(S.towerFloor/10);S.artifactShards=(S.artifactShards||0)+sh;addLog(log,`🏺 +${sh} Shards!`,'log-drop');}
+        // Full heal between floors
+        towerBattle.playerHp=getMaxHp();
+        S.hp=getMaxHp();
+        S.towerFloor++;
+        addLog(log,`✅ F${S.towerFloor-1} cleared! +${fmt(towerBattle.gold)}🪙`,'log-kill');
         for(const ms of TOWER_MILESTONES){if(S.towerFloor>ms.floor&&!S.towerRewardsClaimed.includes(ms.floor))claimTowerMilestone(ms.floor);}
         checkQuests();checkAch();
-    } else {
-        toast(`Too weak for Floor ${S.towerFloor}!`);
+        // Continue — reset for next floor
+        const next=getTowerEnemy();
+        towerBattle.hp=next.hp;towerBattle.maxHp=next.hp;towerBattle.dmg=next.dmg;towerBattle.gold=next.gold;towerBattle.xp=next.xp;
+        renderTowerBattle();updateRes();save();
+        return;
     }
-    renderTower();updateRes();save();
+    // Player dead?
+    if(towerBattle.playerHp<=0){
+        addLog(log,'💀 DEFEATED!','log-hit');
+        S.hp=getMaxHp();
+        towerBattle=null;
+        if(towerAutoInterval){clearInterval(towerAutoInterval);towerAutoInterval=null;}
+        document.getElementById('tower-battle').style.display='none';
+        document.getElementById('tower-idle').style.display='block';
+        toast(`Tower: Defeated at Floor ${S.towerFloor}`);
+        renderTower();
+        return;
+    }
+    renderTowerBattle();
 }
+
+function renderTowerBattle(){
+    if(!towerBattle)return;
+    const hpPct=Math.max(0,(towerBattle.hp/towerBattle.maxHp)*100);
+    const pHpPct=Math.max(0,(towerBattle.playerHp/getMaxHp())*100);
+    document.getElementById('tower-enemy-display').innerHTML=`<div style="font-size:2rem">🗼</div><div style="font-weight:700">F${S.towerFloor} Guardian</div>`;
+    document.getElementById('tower-hp-fill').style.width=hpPct+'%';
+    document.getElementById('tower-hp-text').textContent=`${fmt(Math.max(0,towerBattle.hp))} / ${fmt(towerBattle.maxHp)}`;
+    document.getElementById('tower-player-hp-fill').style.width=pHpPct+'%';
+    document.getElementById('tower-player-hp-text').textContent=`${fmt(Math.max(0,towerBattle.playerHp))} / ${fmt(getMaxHp())}`;
+}
+
+function toggleTowerAuto(){
+    if(towerAutoInterval){clearInterval(towerAutoInterval);towerAutoInterval=null;document.getElementById('btn-tower-auto')?.classList.remove('active');return;}
+    if(!towerBattle)startTowerFight();
+    document.getElementById('btn-tower-auto')?.classList.add('active');
+    towerAutoInterval=setInterval(()=>{
+        if(towerBattle)hitTower();
+        else{clearInterval(towerAutoInterval);towerAutoInterval=null;document.getElementById('btn-tower-auto')?.classList.remove('active');}
+    },400);
+}
+
+function doTowerFight(){startTowerFight();}
 
 // === DAILY REWARDS ===
 function checkDaily(){
@@ -467,7 +584,7 @@ function sellAura(auraId,mod){
     const a=AURAS.find(x=>x.id===auraId);let dv=SELL_VAL[a.rarity]||1;
     if(mod){const m=MODIFIERS.find(x=>x.id===mod);if(m)dv*=m.pMult;}
     dv=Math.floor(dv*getEventBonus('sellMult'));entries.splice(idx,1);if(!entries.length)delete S.auras[auraId];
-    S.dust+=dv;S.totalDust+=dv;trackSessionDust(dv);toast(`+${dv}✨`);renderInv();updateRes();save();
+    S.dust+=dv;S.totalDust+=dv;trackSessionDust(dv);bpTrack('dust',dv);toast(`+${dv}✨`);renderInv();updateRes();save();
 }
 
 // === CRAFT ===
@@ -490,7 +607,7 @@ function craftAura(auraId,mod){
     const result=pool[Math.floor(Math.random()*pool.length)];
     if(!S.auras[result.id])S.auras[result.id]=[];S.auras[result.id].push({mod:null});
     if(ri(result.rarity)>ri(S.bestRarity))S.bestRarity=result.rarity;
-    toast(`Crafted: ${result.icon} ${result.name}!`);renderInv();checkAch();save();
+    toast(`Crafted: ${result.icon} ${result.name}!`);bpTrack('crafts',1);renderInv();checkAch();save();
 }
 
 // === CRAFT & SELL UI ===
@@ -1217,3 +1334,295 @@ function getSessionStats(){
         goldPerMin:mins>0?Math.floor(sessionStats.goldEarned/mins):sessionStats.goldEarned,
     };
 }
+
+// === ARTIFACTS: CRAFTING, EQUIPPING, LEVELING, PROCS ===
+function getArtifactSlots(){return (S.artifactSlots||1)+uLvl('artifact_slots');}
+function getArtifactLevel(id){return S.ownedArtifacts[id]?S.ownedArtifacts[id].level:0;}
+function getArtifactValue(id){
+    const a=ARTIFACTS.find(x=>x.id===id);if(!a)return 0;
+    const lvl=getArtifactLevel(id);if(lvl<=0)return 0;
+    return a.baseValue+a.perLevel*(lvl-1);
+}
+function hasArtifactProc(proc){
+    for(const aId of S.equippedArtifacts){
+        const a=ARTIFACTS.find(x=>x.id===aId);
+        if(a&&a.proc===proc)return getArtifactValue(aId);
+    }
+    return 0;
+}
+
+function craftArtifact(id){
+    if(S.level<ARTIFACT_UNLOCK_LEVEL){toast(`🔒 Artifacts unlock at Lv.${ARTIFACT_UNLOCK_LEVEL}`);return;}
+    const a=ARTIFACTS.find(x=>x.id===id);if(!a)return;
+    if(S.ownedArtifacts[id]){toast('Already owned!');return;}
+    if((S.artifactShards||0)<a.shardCost){toast(`Need ${a.shardCost} shards! (Have ${S.artifactShards||0})`);return;}
+    S.artifactShards-=a.shardCost;
+    S.ownedArtifacts[id]={level:1};
+    toast(`🏺 Crafted: ${a.icon} ${a.name}!`);
+    updateRes();save();
+}
+
+function levelArtifact(id){
+    const a=ARTIFACTS.find(x=>x.id===id);if(!a)return;
+    if(!S.ownedArtifacts[id]){toast('Not owned!');return;}
+    const lvl=S.ownedArtifacts[id].level;
+    if(lvl>=5){toast('Max level!');return;}
+    const cost=ARTIFACT_LEVEL_SHARDS[lvl-1];
+    if((S.artifactShards||0)<cost){toast(`Need ${cost} shards to level up! (Have ${S.artifactShards||0})`);return;}
+    S.artifactShards-=cost;
+    S.ownedArtifacts[id].level=lvl+1;
+    toast(`🏺 ${a.name} → Lv.${lvl+1}! (${a.desc})`);
+    updateRes();save();
+}
+
+function equipArtifact(id){
+    if(!S.ownedArtifacts[id]){toast('Not owned!');return;}
+    if(S.equippedArtifacts.includes(id)){toast('Already equipped!');return;}
+    if(S.equippedArtifacts.length>=getArtifactSlots()){toast('No artifact slots! Unequip one first.');return;}
+    S.equippedArtifacts.push(id);
+    const a=ARTIFACTS.find(x=>x.id===id);
+    toast(`Equipped: ${a.icon} ${a.name}`);
+    updateRes();save();
+}
+
+function unequipArtifact(id){
+    const idx=S.equippedArtifacts.indexOf(id);
+    if(idx>=0){S.equippedArtifacts.splice(idx,1);toast('Artifact unequipped.');}
+    updateRes();save();
+}
+
+// === AURA AWAKENING ===
+function getAwakeningKey(auraId,mod){return `${auraId}_${mod||'null'}`;}
+function getAwakeningTier(auraId,mod){return S.auraAwakening[getAwakeningKey(auraId,mod)]||0;}
+function getAwakeningData(auraId,mod){return AWAKENING_TIERS[getAwakeningTier(auraId,mod)];}
+
+function awakenAura(auraId,mod){
+    if(S.level<AWAKENING_UNLOCK_LEVEL){toast(`🔒 Awakening unlocks at Lv.${AWAKENING_UNLOCK_LEVEL}`);return;}
+    const key=getAwakeningKey(auraId,mod);
+    const currentTier=S.auraAwakening[key]||0;
+    if(currentTier>=3){toast('Already Transcended! Max tier.');return;}
+    // Must be equipped
+    if(!S.equippedAuras.some(e=>e.id===auraId&&e.mod===mod)){toast('Must be equipped to awaken!');return;}
+    const nextTier=AWAKENING_TIERS[currentTier+1];
+    // Check dupe count (non-equipped copies of same aura with same mod)
+    const entries=S.auras[auraId];
+    if(!entries){toast('No duplicates to feed!');return;}
+    const available=entries.filter(e=>{
+        const eMod=e.mod||null;
+        const tMod=mod||null;
+        if(eMod!==tMod)return false;
+        return !S.equippedAuras.some(eq=>eq.id===auraId&&eq.mod===eMod);
+    });
+    if(available.length<nextTier.dupeCost){toast(`Need ${nextTier.dupeCost} duplicates! (Have ${available.length})`);return;}
+    // Check dust cost
+    if(S.dust<nextTier.dustCost){toast(`Need ${fmt(nextTier.dustCost)} dust!`);return;}
+    // Consume dupes
+    let removed=0;
+    for(let i=entries.length-1;i>=0&&removed<nextTier.dupeCost;i--){
+        const eMod=entries[i].mod||null;
+        const tMod=mod||null;
+        if(eMod!==tMod)continue;
+        if(S.equippedAuras.some(eq=>eq.id===auraId&&eq.mod===eMod))continue;
+        entries.splice(i,1);removed++;
+    }
+    if(!entries.length)delete S.auras[auraId];
+    S.dust-=nextTier.dustCost;
+    S.auraAwakening[key]=currentTier+1;
+    const a=AURAS.find(x=>x.id===auraId)||(S.hybrids&&S.hybrids[auraId]);
+    toast(`⭐ ${a?a.name:'Aura'} → ${nextTier.name}! (${nextTier.abilityMult}x ability)`);
+    sfxLegendary();screenFlash(nextTier.color);
+    renderInv();updateRes();updateCombat();save();
+}
+
+// === BATTLE PASS ===
+function getBpWeekId(){return Math.floor(Date.now()/(7*24*60*60*1000));}
+function getBpDayId(){return Math.floor(Date.now()/(24*60*60*1000));}
+
+function initBattlePass(){
+    // Check daily reset
+    const today=getBpDayId();
+    if(!S.bpDailyReset||Math.floor(S.bpDailyReset/(24*60*60*1000))!==today){
+        S.bpDailyReset=today*24*60*60*1000;
+        S.bpDailyProgress={kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0};
+        // Pick 3 daily challenges (seeded by day)
+        const shuffled=[...BP_DAILY_POOL].sort((a,b)=>{
+            const ha=(today*31+a.id.charCodeAt(2))%100;
+            const hb=(today*31+b.id.charCodeAt(2))%100;
+            return ha-hb;
+        });
+        S.bpDailyChallenges=shuffled.slice(0,BP_DAILY_COUNT).map(c=>({id:c.id,progress:0,completed:false}));
+    }
+    // Check weekly reset
+    const week=getBpWeekId();
+    if(!S.bpWeeklyReset||Math.floor(S.bpWeeklyReset/(7*24*60*60*1000))!==week){
+        S.bpWeeklyReset=week*7*24*60*60*1000;
+        S.bpWeeklyProgress={kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0};
+        // Pick 4 weekly challenges (seeded by week)
+        const shuffled=[...BP_WEEKLY_POOL].sort((a,b)=>{
+            const ha=(week*37+a.id.charCodeAt(2))%100;
+            const hb=(week*37+b.id.charCodeAt(2))%100;
+            return ha-hb;
+        });
+        S.bpWeeklyChallenges=shuffled.slice(0,BP_WEEKLY_COUNT).map(c=>({id:c.id,progress:0,completed:false}));
+    }
+    save();
+}
+
+function bpTrack(type,amount){
+    if(!S.bpDailyProgress)S.bpDailyProgress={kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0};
+    if(!S.bpWeeklyProgress)S.bpWeeklyProgress={kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0};
+    S.bpDailyProgress[type]=(S.bpDailyProgress[type]||0)+amount;
+    S.bpWeeklyProgress[type]=(S.bpWeeklyProgress[type]||0)+amount;
+    // Check daily challenges
+    if(S.bpDailyChallenges){
+        for(const ch of S.bpDailyChallenges){
+            if(ch.completed)continue;
+            const def=BP_DAILY_POOL.find(x=>x.id===ch.id);
+            if(!def||def.type!==type)continue;
+            ch.progress=S.bpDailyProgress[type];
+            if(ch.progress>=def.target){ch.completed=true;bpGrantXp(def.xp);toast(`📋 Daily: ${def.name} +${def.xp} XP`);}
+        }
+    }
+    // Check weekly challenges
+    if(S.bpWeeklyChallenges){
+        for(const ch of S.bpWeeklyChallenges){
+            if(ch.completed)continue;
+            const def=BP_WEEKLY_POOL.find(x=>x.id===ch.id);
+            if(!def||def.type!==type)continue;
+            ch.progress=S.bpWeeklyProgress[type];
+            if(ch.progress>=def.target){ch.completed=true;bpGrantXp(def.xp);toast(`📋 Weekly: ${def.name} +${def.xp} XP`);}
+        }
+    }
+}
+
+function bpGrantXp(amount){
+    S.bpXp=(S.bpXp||0)+amount;
+    while(S.bpLevel<BP_MAX_LEVEL&&S.bpXp>=BP_XP_PER_LEVEL){
+        S.bpXp-=BP_XP_PER_LEVEL;
+        S.bpLevel++;
+        toast(`📋 Battle Pass Level ${S.bpLevel}!`);
+    }
+}
+
+function claimBpReward(level,track){
+    if(track==='premium'&&!S.bpPremium){toast('Need Premium pass!');return;}
+    if(S.bpLevel<level){toast('Not reached yet!');return;}
+    const claimed=track==='free'?S.bpClaimedFree:S.bpClaimedPremium;
+    if(claimed.includes(level)){toast('Already claimed!');return;}
+    const tierData=BP_REWARDS.find(x=>x.level===level);if(!tierData)return;
+    const reward=tierData[track];
+    claimed.push(level);
+    for(const[r,v]of Object.entries(reward)){S[r]=(S[r]||0)+v;}
+    const rwStr=Object.entries(reward).map(([r,v])=>`+${fmt(v)} ${r}`).join(', ');
+    toast(`🎁 Lv.${level} ${track}: ${rwStr}`);
+    updateRes();save();
+}
+
+function buyBpPremium(){
+    if(S.bpPremium){toast('Already owned!');return;}
+    if(S.gems<BP_PREMIUM_COST){toast(`Need ${BP_PREMIUM_COST} gems!`);return;}
+    if(!confirm(`Unlock Premium Battle Pass for ${BP_PREMIUM_COST} gems?`))return;
+    S.gems-=BP_PREMIUM_COST;
+    S.bpPremium=true;
+    toast('⭐ Premium Battle Pass unlocked!');
+    updateRes();save();
+}
+
+function getBpDailyTimeRemaining(){
+    const dayEnd=(getBpDayId()+1)*24*60*60*1000;
+    const rem=Math.max(0,dayEnd-Date.now());
+    const hrs=Math.floor(rem/(60*60*1000));const mins=Math.floor((rem%(60*60*1000))/(60*1000));
+    return `${hrs}h ${mins}m`;
+}
+function getBpWeeklyTimeRemaining(){
+    const weekEnd=(getBpWeekId()+1)*7*24*60*60*1000;
+    const rem=Math.max(0,weekEnd-Date.now());
+    const days=Math.floor(rem/(24*60*60*1000));const hrs=Math.floor((rem%(24*60*60*1000))/(60*60*1000));
+    return `${days}d ${hrs}h`;
+}
+
+// === BOSS RUSH ===
+let bossRushActive=null; // {wave, hp, maxHp, playerHp, rewards:{gold,gems,artifactShards}, milestonesHit:[]}
+
+function startBossRush(){
+    if(S.level<BOSS_RUSH_UNLOCK_LEVEL){toast(`🔒 Boss Rush unlocks at Lv.${BOSS_RUSH_UNLOCK_LEVEL}`);return;}
+    if(Date.now()<(S.bossRushCd||0)){const rem=Math.ceil((S.bossRushCd-Date.now())/1000);toast(`Cooldown: ${Math.floor(rem/60)}m ${rem%60}s`);return;}
+    if(bossRushActive){toast('Already in a rush!');return;}
+    bossRushActive={wave:1,hp:0,maxHp:0,playerHp:getMaxHp(),rewards:{gold:0,gems:0,artifactShards:0},milestonesHit:[]};
+    spawnBossRushWave();
+    renderBossRush();
+}
+
+function spawnBossRushWave(){
+    if(!bossRushActive)return;
+    const w=bossRushActive.wave;
+    if(w>BOSS_RUSH_ENEMIES.length){endBossRush(true);return;}
+    const def=BOSS_RUSH_ENEMIES[w-1];
+    bossRushActive.hp=Math.floor(BOSS_RUSH_BASE_HP*def.hpMult);
+    bossRushActive.maxHp=bossRushActive.hp;
+    renderBossRush();
+}
+
+function hitBossRush(){
+    if(!bossRushActive||bossRushActive.hp<=0)return;
+    const def=BOSS_RUSH_ENEMIES[bossRushActive.wave-1];
+    // Player attacks
+    let d=getPlayerDmg();
+    if(Math.random()<getCrit()){const critM=hasArtifactProc('critMult');d*=(critM||2);}
+    d=Math.floor(d*(0.85+Math.random()*0.3));
+    bossRushActive.hp-=d;
+    // Boss attacks back
+    const bossDmg=Math.floor(BOSS_RUSH_BASE_DMG*def.dmgMult*(0.8+Math.random()*0.4));
+    const defReduce=getDef();
+    const actual=Math.max(1,bossDmg-defReduce);
+    bossRushActive.playerHp-=actual;
+    // Lifesteal
+    const ls=getLifesteal();
+    if(ls>0)bossRushActive.playerHp=Math.min(getMaxHp(),bossRushActive.playerHp+Math.floor(d*ls));
+    // Boss dead?
+    if(bossRushActive.hp<=0){
+        // Wave reward: gold per wave
+        const waveGold=Math.floor(10000*Math.pow(2,bossRushActive.wave-1));
+        bossRushActive.rewards.gold+=waveGold;
+        // Check milestones
+        for(const ms of BOSS_RUSH_MILESTONES){
+            if(bossRushActive.wave>=ms.wave&&!bossRushActive.milestonesHit.includes(ms.wave)){
+                bossRushActive.milestonesHit.push(ms.wave);
+                bossRushActive.rewards.gold+=(ms.reward.gold||0);
+                bossRushActive.rewards.gems+=(ms.reward.gems||0);
+                bossRushActive.rewards.artifactShards+=(ms.reward.artifactShards||0);
+                toast(`🏆 Wave ${ms.wave} milestone!`);
+            }
+        }
+        bossRushActive.wave++;
+        spawnBossRushWave();
+    }
+    // Player dead?
+    if(bossRushActive&&bossRushActive.playerHp<=0){
+        endBossRush(false);
+    }
+    renderBossRush();
+}
+
+function endBossRush(victory){
+    if(!bossRushActive)return;
+    const wavesCleared=bossRushActive.wave-1;
+    // Grant rewards
+    S.gold+=bossRushActive.rewards.gold;S.totalGold+=bossRushActive.rewards.gold;
+    S.gems+=bossRushActive.rewards.gems;
+    S.artifactShards=(S.artifactShards||0)+bossRushActive.rewards.artifactShards;
+    if(wavesCleared>S.bossRushBest)S.bossRushBest=wavesCleared;
+    S.bossRushCd=Date.now()+BOSS_RUSH_COOLDOWN;
+    const rwStr=`${fmt(bossRushActive.rewards.gold)}🪙 ${bossRushActive.rewards.gems}💎 ${bossRushActive.rewards.artifactShards}🏺`;
+    toast(`${victory?'🏆 BOSS RUSH COMPLETE!':'💀 Defeated at Wave '+bossRushActive.wave}! Cleared ${wavesCleared} waves. ${rwStr}`);
+    bossRushActive=null;
+    updateRes();save();renderBossRush();
+}
+
+let brAutoInterval=null;
+function toggleBossRushAuto(){
+    if(brAutoInterval){clearInterval(brAutoInterval);brAutoInterval=null;return;}
+    brAutoInterval=setInterval(()=>{if(bossRushActive)hitBossRush();else{clearInterval(brAutoInterval);brAutoInterval=null;}},400);
+}
+
+

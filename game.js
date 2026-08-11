@@ -8,7 +8,9 @@ function setupEvents(){
     document.getElementById('btn-auto-roll').addEventListener('click',toggleAutoRoll);
     document.getElementById('btn-fight').addEventListener('click',doFight);
     document.getElementById('btn-auto-fight').addEventListener('click',toggleAutoFight);
-    document.getElementById('btn-tower-fight').addEventListener('click',doTowerFight);
+    document.getElementById('btn-tower-fight')?.addEventListener('click',doTowerFight);
+    document.getElementById('btn-tower-attack')?.addEventListener('click',hitTower);
+    document.getElementById('btn-tower-auto')?.addEventListener('click',toggleTowerAuto);
     document.getElementById('btn-wb-attack')?.addEventListener('click',hitWorldBoss);
     document.getElementById('btn-wb-auto')?.addEventListener('click',toggleWbAuto);
     document.getElementById('btn-rebirth').addEventListener('click',doRebirth);
@@ -228,10 +230,16 @@ function dgComplete(){
     S.gold+=dgRun.loot.gold;S.totalGold+=dgRun.loot.gold;
     S.gems+=dgRun.loot.gems;S.dust+=dgRun.loot.dust;S.totalDust+=dgRun.loot.dust;
     S.enchantStones=(S.enchantStones||0)+dgRun.loot.enchantStones;
+    // Artifact shard drops from dungeons (3-8 based on dungeon tier)
+    const dIdx=DUNGEONS.findIndex(x=>x.id===dgRun.dungeonId);
+    const shardDrop=3+dIdx+Math.floor(Math.random()*3);
+    S.artifactShards=(S.artifactShards||0)+shardDrop;
+    bpTrack('shards',shardDrop);
     if(dgRun.loot.gear){if(!S.gear[dgRun.loot.gear])S.gear[dgRun.loot.gear]=0;S.gear[dgRun.loot.gear]++;}
     if(!S.dungeonsDone.includes(dgRun.dungeonId))S.dungeonsDone.push(dgRun.dungeonId);
+    bpTrack('dungeon',1);
     S.dungeonCds[dgRun.dungeonId]=Date.now()+300000;
-    const rwStr=`+${fmt(dgRun.loot.gold)}🪙 +${dgRun.loot.gems}💎 +${dgRun.loot.dust}✨${dgRun.loot.gear?' +'+GEAR.find(x=>x.id===dgRun.loot.gear)?.name:''}`;
+    const rwStr=`+${fmt(dgRun.loot.gold)}🪙 +${dgRun.loot.gems}💎 +${dgRun.loot.dust}✨ +${shardDrop}🏺${dgRun.loot.gear?' +'+GEAR.find(x=>x.id===dgRun.loot.gear)?.name:''}`;
     toast(`Dungeon clear! ${rwStr}`);
     dgRun=null;document.getElementById('dungeon-run').style.display='none';document.getElementById('dungeon-list').style.display='flex';
     renderDungeons();updateRes();checkQuests();checkAch();save();
@@ -240,6 +248,7 @@ function dgFail(){toast('Dungeon failed! You were defeated.');dgRun=null;documen
 
 function init(){
     load();loadSettings();if(S.hp<=0)S.hp=getMaxHp();
+    initBattlePass();
     handleOffline();checkDaily();setupEvents();renderAll();
     if(!S.tutorialDone)startTutorial();
     // Block clicks during tutorial except highlighted
@@ -259,8 +268,6 @@ function init(){
     if(!S.tradeStock||!S.tradeStock.length||Date.now()>=S.tradeRefresh)refreshTrade();
     setInterval(periodic,1000);
     setInterval(save,15000);
-    // Ascension button
-    document.getElementById('btn-ascend')?.addEventListener('click',doAscend);
     // Init audio on first click
     document.addEventListener('click',()=>initAudio(),{once:true});
     // Hide splash

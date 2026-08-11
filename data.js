@@ -279,6 +279,23 @@ a('throne_of_light','Throne of Light','🪑','epic',6,'all',0.25,'+25% All');
 a('god_hand','God Hand','🖐️','epic',6,'dmg',0.7,'+70% DMG');
 a('heaven_ruler','Heaven Ruler','👸','legendary',6,'all',0.35,'+35% All');
 a('celestial_origin','Celestial Origin','🌟','legendary',6,'luck',4,'+4 Luck');
+// ZONE 7 - The Rift (16 auras)
+a('rift_spark','Rift Spark','⚡','common',7,'dmg',0.2,'+20% DMG');
+a('torn_fabric','Torn Fabric','🧵','common',7,'def',20,'+20 DEF');
+a('anomaly_dust','Anomaly Dust','✨','common',7,'luck',0.6,'+0.6 Luck');
+a('broken_time','Broken Time','⏰','common',7,'speed',0.12,'+12% Speed');
+a('void_residue','Void Residue','🫧','common',7,'gold',0.2,'+20% Gold');
+a('reality_echo','Reality Echo','〰️','common',7,'xp',0.15,'+15% XP');
+a('rift_walker','Rift Walker','🚶','uncommon',7,'speed',0.25,'+25% Speed');
+a('phase_blade','Phase Blade','🗡️','uncommon',7,'dmg',0.35,'+35% DMG');
+a('warp_field','Warp Field','🔲','uncommon',7,'def',50,'+50 DEF');
+a('glitch_pulse','Glitch Pulse','💜','uncommon',7,'crit',0.08,'+8% Crit');
+a('tear_drop','Tear Drop','💧','rare',7,'all',0.15,'+15% All');
+a('unstable_core','Unstable Core','💥','rare',7,'dmg',0.6,'+60% DMG');
+a('rift_lord','Rift Lord','👑','epic',7,'all',0.3,'+30% All');
+a('anomaly_king','Anomaly King','🫅','epic',7,'luck',4,'+4 Luck');
+a('reality_breaker','Reality Breaker','🌀','legendary',7,'all',0.45,'+45% All');
+a('the_anomaly','THE ANOMALY','🫠','legendary',7,'dmg',1.2,'+120% DMG');
 // === SEASONAL AURA ===
 a('winter_soul','Winter Soul','❄️','legendary',-1,'luck',3,'+3 Luck [SEASONAL]');
 a('spring_bloom','Spring Bloom','🌸','legendary',-1,'all',0.18,'+18% All [SEASONAL]');
@@ -288,7 +305,7 @@ const AURAS=A;
 const SEASONAL_AURAS=['winter_soul','spring_bloom','summer_blaze','autumn_harvest'];
 
 // === GEAR (sets) ===
-const GEAR_SETS={plains:{name:'Plains',bonus:{def:10,hp:50},desc:'+10 DEF +50 HP'},volcanic:{name:'Volcanic',bonus:{dmg:0.3,crit:0.05},desc:'+30% DMG +5% Crit'},ocean:{name:'Ocean',bonus:{hp:150,lifesteal:0.05},desc:'+150 HP +5% LS'},void:{name:'Void',bonus:{luck:3,dmg:0.5},desc:'+3 Luck +50% DMG'},cosmos:{name:'Cosmos',bonus:{all:0.3},desc:'+30% All'},underworld:{name:'Underworld',bonus:{dmg:0.6,lifesteal:0.08},desc:'+60% DMG +8% LS'},celestial:{name:'Celestial',bonus:{all:0.4,luck:5},desc:'+40% All +5 Luck'}};
+const GEAR_SETS={plains:{name:'Plains',bonus:{def:10,hp:50},desc:'+10 DEF +50 HP'},volcanic:{name:'Volcanic',bonus:{dmg:0.3,crit:0.05},desc:'+30% DMG +5% Crit'},ocean:{name:'Ocean',bonus:{hp:150,lifesteal:0.05},desc:'+150 HP +5% LS'},void:{name:'Void',bonus:{luck:3,dmg:0.5},desc:'+3 Luck +50% DMG'},cosmos:{name:'Cosmos',bonus:{all:0.3},desc:'+30% All'},underworld:{name:'Underworld',bonus:{dmg:0.6,lifesteal:0.08},desc:'+60% DMG +8% LS'},celestial:{name:'Celestial',bonus:{all:0.4,luck:5},desc:'+40% All +5 Luck'},rift:{name:'Rift',bonus:{all:0.6,luck:8,crit:0.1},desc:'+60% All +8 Luck +10% Crit'}};
 const GEAR=[
 {id:'wooden_sword',name:'Wooden Sword',icon:'🗡️',rarity:'common',power:5,zone:0,set:'plains'},
 {id:'leather_armor',name:'Leather Armor',icon:'🛡️',rarity:'common',power:3,defense:2,zone:0,set:'plains'},
@@ -355,6 +372,13 @@ const GEAR=[
 {id:'underworld_ring',name:'Underworld Ring',icon:'💍',rarity:'epic',power:500,zone:5,set:'underworld'},
 {id:'soul_pendant',name:'Soul Pendant',icon:'📿',rarity:'legendary',power:1500,defense:80,zone:5,set:'underworld'},
 {id:'heaven_ring',name:'Heaven Ring',icon:'💍',rarity:'epic',power:600,zone:6,set:'celestial'},
+// Rift gear
+{id:'rift_blade',name:'Rift Blade',icon:'🗡️',rarity:'legendary',power:3000,zone:7,set:'rift'},
+{id:'anomaly_shield',name:'Anomaly Shield',icon:'🛡️',rarity:'legendary',power:2500,defense:400,zone:7,set:'rift'},
+{id:'warp_staff',name:'Warp Staff',icon:'🪄',rarity:'mythic',power:8000,zone:7,set:'rift'},
+{id:'rift_crown',name:'Rift Crown',icon:'👑',rarity:'mythic',power:10000,defense:800,zone:7,set:'rift'},
+{id:'reality_edge',name:'Reality Edge',icon:'⚔️',rarity:'divine',power:25000,zone:7,set:'rift'},
+{id:'anomaly_core',name:'Anomaly Core',icon:'💜',rarity:'cosmic',power:60000,zone:7,set:'rift'},
 ];
 // === EGGS & PETS ===
 const EGG_TYPES=[
@@ -441,6 +465,7 @@ const ZONES=[
 {id:'cosmos',name:'Reality Core',icon:'🌀',desc:'Center of existence.',reqPower:12000,enemies:[{name:'Shard',icon:'💠',hp:28000,dmg:900,gold:2500,xp:1400},{name:'Paradox',icon:'⏳',hp:70000,dmg:2000,gold:5000,xp:2800},{name:'Entity',icon:'🌟',hp:160000,dmg:3500,gold:12000,xp:6000},{name:'CREATOR',icon:'👁️',hp:500000,dmg:6500,gold:50000,xp:25000,boss:true}],gearDrop:0.06},
 {id:'underworld',name:'Underworld',icon:'💀',desc:'Realm of the dead.',reqPower:45000,enemies:[{name:'Lost Soul',icon:'👻',hp:90000,dmg:4500,gold:8000,xp:4500},{name:'Demon Knight',icon:'😈',hp:220000,dmg:7500,gold:18000,xp:9000},{name:'Lich',icon:'☠️',hp:450000,dmg:11000,gold:40000,xp:18000},{name:'Death God',icon:'💀',hp:1300000,dmg:18000,gold:120000,xp:60000,boss:true}],gearDrop:0.06},
 {id:'celestial',name:'Celestial Realm',icon:'😇',desc:'Domain of the gods.',reqPower:180000,enemies:[{name:'Cherub',icon:'👼',hp:350000,dmg:14000,gold:25000,xp:12000},{name:'Seraph',icon:'🪽',hp:900000,dmg:23000,gold:55000,xp:25000},{name:'Archangel',icon:'⚔️',hp:2500000,dmg:38000,gold:120000,xp:55000},{name:'GOD',icon:'✦',hp:8000000,dmg:75000,gold:400000,xp:150000,boss:true}],gearDrop:0.05},
+{id:'rift',name:'The Rift',icon:'🌀',desc:'Reality tears apart. Enemies mutate.',reqPower:750000,enemies:[{name:'Rift Spawn',icon:'🫠',hp:1500000,dmg:50000,gold:80000,xp:40000},{name:'Void Wraith',icon:'👤',hp:4000000,dmg:90000,gold:180000,xp:80000},{name:'Reality Shard',icon:'💠',hp:10000000,dmg:150000,gold:400000,xp:150000},{name:'THE ANOMALY',icon:'🌀',hp:30000000,dmg:250000,gold:1500000,xp:500000,boss:true}],gearDrop:0.06,riftMods:true},
 ];
 const DUNGEONS=[
 {id:'d1',name:"Goblin Lair",icon:'👑',reqPower:25,boss:{name:'Goblin King',icon:'👺',hp:1500},time:30,rewards:{gold:800,gems:10,gear:'chain_mail'}},
@@ -450,6 +475,7 @@ const DUNGEONS=[
 {id:'d5',name:"Reality Fracture",icon:'🌀',reqPower:12000,boss:{name:'Reality',icon:'🌀',hp:800000},time:90,rewards:{gold:600000,gems:1500,gear:'infinity_edge'}},
 {id:'d6',name:"Hell's Gate",icon:'💀',reqPower:45000,boss:{name:'Hell Lord',icon:'😈',hp:4000000},time:100,rewards:{gold:3000000,gems:4000,gear:'death_crown'}},
 {id:'d7',name:"Heaven's Trial",icon:'😇',reqPower:180000,boss:{name:'Supreme Angel',icon:'👼',hp:20000000},time:120,rewards:{gold:15000000,gems:12000,gear:'celestial_edge'}},
+{id:'d8',name:"The Rift Tear",icon:'🌀',reqPower:750000,boss:{name:'THE ANOMALY',icon:'🫠',hp:100000000},time:150,rewards:{gold:50000000,gems:30000,gear:'anomaly_core'}},
 ];
 
 // === POTIONS ===
@@ -556,6 +582,7 @@ const SHOP=[
 {id:'auto_battle',name:'Auto Battle',desc:'Unlock auto-fight',max:1,base:500,mult:1,cur:'gold'},
 {id:'inv_slots',name:'Inventory+',desc:'+10 aura slots/lv',max:15,base:200,mult:1.6,cur:'gold'},
 {id:'auto_sell_unlock',name:'Auto Sell',desc:'Unlock auto-selling',max:1,base:1500,mult:1,cur:'gold'},
+{id:'artifact_slots',name:'Artifact Slots',desc:'+1 artifact slot',max:2,base:300,mult:4,cur:'gems'},
 ];
 
 const REBIRTH_REQS=[{lv:25,gold:40000},{lv:35,gold:150000},{lv:45,gold:600000},{lv:55,gold:3e6},{lv:65,gold:15e6},{lv:75,gold:60e6},{lv:90,gold:300e6},{lv:105,gold:1.5e9}];
@@ -726,3 +753,131 @@ const SERVER_EVENTS=[
     {id:'enchant_boost',name:'Enchant Boost',icon:'🔮',desc:'+20% enchant success!',duration:180,effect:{type:'enchantBoost',value:0.2}},
     {id:'double_drops',name:'Double Drops',icon:'⚔️',desc:'2x gear drop rate!',duration:200,effect:{type:'gearDrop',value:2}},
 ];
+
+// === ARTIFACTS ===
+// proc types: onKillGold, critMult, guaranteedRare, onKillHeal, ignoreDefense, xpToGold, pitySpeed, gearDropBoost, dustBonus, echoStrike
+const ARTIFACTS=[
+    {id:'midas_touch',name:'Midas Touch',icon:'👑',rarity:'rare',desc:'On kill, 8% chance to double gold',proc:'onKillGold',baseValue:0.08,perLevel:0.03,shardCost:20},
+    {id:'critical_mass',name:'Critical Mass',icon:'💥',rarity:'rare',desc:'Crits deal 3x instead of 2x',proc:'critMult',baseValue:3,perLevel:0.5,shardCost:20},
+    {id:'lucky_charm',name:'Lucky Charm',icon:'🍀',rarity:'epic',desc:'Every 10th roll guaranteed Rare+',proc:'guaranteedRare',baseValue:10,perLevel:-1,shardCost:50},
+    {id:'soul_siphon',name:'Soul Siphon',icon:'💚',rarity:'rare',desc:'On kill, heal 5% max HP',proc:'onKillHeal',baseValue:0.05,perLevel:0.02,shardCost:20},
+    {id:'shatter',name:'Shatter',icon:'💎',rarity:'epic',desc:'Hits have 10% chance to ignore defense',proc:'ignoreDefense',baseValue:0.10,perLevel:0.04,shardCost:50},
+    {id:'overflow',name:'Overflow',icon:'📖',rarity:'rare',desc:'Excess XP converts to gold at 2:1 ratio',proc:'xpToGold',baseValue:2,perLevel:0.5,shardCost:20},
+    {id:'pity_breaker',name:'Pity Breaker',icon:'🎯',rarity:'epic',desc:'Pity counter fills 2x faster',proc:'pitySpeed',baseValue:2,perLevel:0.3,shardCost:50},
+    {id:'treasure_hunter',name:'Treasure Hunter',icon:'🗺️',rarity:'rare',desc:'Gear drop rate +25%',proc:'gearDropBoost',baseValue:0.25,perLevel:0.10,shardCost:20},
+    {id:'dust_devil',name:'Dust Devil',icon:'🌪️',rarity:'epic',desc:'Auto-sell gives 50% bonus dust',proc:'dustBonus',baseValue:0.50,perLevel:0.15,shardCost:50},
+    {id:'echo_strike',name:'Echo Strike',icon:'⚔️',rarity:'legendary',desc:'15% chance to attack twice',proc:'echoStrike',baseValue:0.15,perLevel:0.05,shardCost:150},
+    {id:'golden_hour',name:'Golden Hour',icon:'🌅',rarity:'legendary',desc:'Gold mult +30%',proc:'goldMult',baseValue:0.30,perLevel:0.10,shardCost:150},
+    {id:'void_lens',name:'Void Lens',icon:'🔮',rarity:'legendary',desc:'Luck +20%',proc:'luckBoost',baseValue:0.20,perLevel:0.08,shardCost:150},
+    {id:'time_dilation',name:'Time Dilation',icon:'⏳',rarity:'epic',desc:'Roll speed +20%',proc:'rollSpeedBoost',baseValue:0.20,perLevel:0.08,shardCost:50},
+    {id:'blood_pact',name:'Blood Pact',icon:'🩸',rarity:'legendary',desc:'Deal 20% more DMG but take 10% more',proc:'bloodPact',baseValue:0.20,perLevel:0.05,shardCost:150},
+    {id:'fortune_favor',name:"Fortune's Favor",icon:'🎰',rarity:'epic',desc:'Wheel spins cost 20% less gems',proc:'wheelDiscount',baseValue:0.20,perLevel:0.05,shardCost:50},
+];
+const ARTIFACT_LEVEL_SHARDS=[0,10,25,50,100]; // shards to go from level 1->2, 2->3, etc. (max level 5)
+const ARTIFACT_UNLOCK_LEVEL=15; // player level to unlock artifacts
+
+// === AURA AWAKENING ===
+// Feed duplicates of the same aura into an equipped one to power it up
+// Tier 0 = normal, 1 = Awakened, 2 = Enlightened, 3 = Transcended
+const AWAKENING_TIERS=[
+    {id:'normal',name:'',stars:0,abilityMult:1,powerMult:1,color:''},
+    {id:'awakened',name:'Awakened',stars:1,abilityMult:1.5,powerMult:1.5,color:'#10b981',dustCost:100,dupeCost:3},
+    {id:'enlightened',name:'Enlightened',stars:2,abilityMult:2,powerMult:2.5,color:'#f59e0b',dustCost:500,dupeCost:5},
+    {id:'transcended',name:'Transcended',stars:3,abilityMult:3,powerMult:5,color:'#ec4899',dustCost:2000,dupeCost:10},
+];
+const AWAKENING_UNLOCK_LEVEL=12;
+
+// === BATTLE PASS ===
+// Season-style battle pass with free + premium tracks, daily & weekly challenges
+const BP_XP_PER_LEVEL=500;
+const BP_MAX_LEVEL=30;
+
+const BP_DAILY_POOL=[
+    {id:'d_kills_30',name:'Daily Slayer',desc:'Kill 30 enemies',type:'kills',target:30,xp:50},
+    {id:'d_kills_80',name:'Daily Warrior',desc:'Kill 80 enemies',type:'kills',target:80,xp:80},
+    {id:'d_rolls_20',name:'Daily Roller',desc:'Roll 20 times',type:'rolls',target:20,xp:50},
+    {id:'d_rolls_60',name:'Daily Spinner',desc:'Roll 60 times',type:'rolls',target:60,xp:80},
+    {id:'d_gold_3k',name:'Daily Earner',desc:'Earn 3,000 gold',type:'gold',target:3000,xp:50},
+    {id:'d_gold_15k',name:'Daily Banker',desc:'Earn 15,000 gold',type:'gold',target:15000,xp:80},
+    {id:'d_dust_200',name:'Daily Dust',desc:'Earn 200 dust',type:'dust',target:200,xp:50},
+    {id:'d_tower_2',name:'Daily Climb',desc:'Clear 2 tower floors',type:'tower',target:2,xp:60},
+    {id:'d_elites_3',name:'Daily Elite',desc:'Kill 3 elites',type:'elites',target:3,xp:60},
+    {id:'d_bosses_1',name:'Daily Boss',desc:'Kill a boss',type:'bosses',target:1,xp:70},
+];
+
+const BP_WEEKLY_POOL=[
+    {id:'w_kills_500',name:'Weekly Massacre',desc:'Kill 500 enemies',type:'kills',target:500,xp:300},
+    {id:'w_rolls_300',name:'Weekly Roll Maniac',desc:'Roll 300 times',type:'rolls',target:300,xp:300},
+    {id:'w_gold_100k',name:'Weekly Fortune',desc:'Earn 100,000 gold',type:'gold',target:100000,xp:350},
+    {id:'w_dust_3000',name:'Weekly Dust Storm',desc:'Earn 3,000 dust',type:'dust',target:3000,xp:300},
+    {id:'w_bosses_10',name:'Weekly Boss Rush',desc:'Kill 10 bosses',type:'bosses',target:10,xp:400},
+    {id:'w_tower_10',name:'Weekly Tower',desc:'Clear 10 tower floors',type:'tower',target:10,xp:300},
+    {id:'w_dungeon_3',name:'Weekly Dungeoneer',desc:'Clear 3 dungeons',type:'dungeon',target:3,xp:400},
+    {id:'w_craft_10',name:'Weekly Crafter',desc:'Craft 10 auras',type:'crafts',target:10,xp:300},
+    {id:'w_shards_10',name:'Weekly Shard Hunter',desc:'Collect 10 shards',type:'shards',target:10,xp:350},
+    {id:'w_wb_1',name:'Weekly World Boss',desc:'Defeat a world boss',type:'worldboss',target:1,xp:400},
+];
+
+const BP_REWARDS=[
+    {level:1,free:{gold:1000},premium:{gold:3000,gems:10}},
+    {level:2,free:{dust:200},premium:{dust:600,gems:15}},
+    {level:3,free:{gems:15},premium:{gems:40,dust:300}},
+    {level:4,free:{gold:3000},premium:{gold:8000,enchantStones:2}},
+    {level:5,free:{enchantStones:1},premium:{enchantStones:3,artifactShards:3}},
+    {level:6,free:{dust:500},premium:{dust:1500,gems:25}},
+    {level:7,free:{gold:5000},premium:{gold:12000,artifactShards:5}},
+    {level:8,free:{gems:25},premium:{gems:60,dust:800}},
+    {level:9,free:{artifactShards:3},premium:{artifactShards:8,enchantStones:3}},
+    {level:10,free:{gems:50,dust:1000},premium:{gems:120,dust:3000,enchantStones:5}},
+    {level:11,free:{gold:8000},premium:{gold:20000,gems:30}},
+    {level:12,free:{dust:800},premium:{dust:2000,artifactShards:5}},
+    {level:13,free:{gems:30},premium:{gems:80,enchantStones:3}},
+    {level:14,free:{gold:12000},premium:{gold:30000,dust:1000}},
+    {level:15,free:{enchantStones:3,artifactShards:5},premium:{enchantStones:8,artifactShards:12,gems:100}},
+    {level:16,free:{dust:1200},premium:{dust:3000,gems:40}},
+    {level:17,free:{gold:15000},premium:{gold:40000,artifactShards:8}},
+    {level:18,free:{gems:40},premium:{gems:100,dust:2000}},
+    {level:19,free:{artifactShards:5},premium:{artifactShards:15,enchantStones:5}},
+    {level:20,free:{gems:80,dust:2000},premium:{gems:200,dust:5000,enchantStones:8}},
+    {level:21,free:{gold:20000},premium:{gold:50000,gems:50}},
+    {level:22,free:{dust:1500},premium:{dust:4000,artifactShards:10}},
+    {level:23,free:{gems:50},premium:{gems:120,enchantStones:5}},
+    {level:24,free:{gold:25000},premium:{gold:60000,dust:2000}},
+    {level:25,free:{enchantStones:5,artifactShards:8},premium:{enchantStones:12,artifactShards:20,gems:150}},
+    {level:26,free:{dust:2000},premium:{dust:5000,gems:60}},
+    {level:27,free:{gold:30000},premium:{gold:80000,artifactShards:12}},
+    {level:28,free:{gems:60},premium:{gems:150,dust:3000}},
+    {level:29,free:{artifactShards:10},premium:{artifactShards:25,enchantStones:8}},
+    {level:30,free:{gems:150,dust:5000,enchantStones:5},premium:{gems:500,dust:15000,enchantStones:15,artifactShards:30}},
+];
+const BP_DAILY_COUNT=3;
+const BP_WEEKLY_COUNT=4;
+const BP_PREMIUM_COST=500;
+
+
+// === BOSS RUSH ===
+// Gauntlet of escalating bosses, no healing between fights. Rewards scale with waves cleared.
+const BOSS_RUSH_ENEMIES=[
+    {wave:1,name:'Goblin King',icon:'👺',hpMult:1,dmgMult:1},
+    {wave:2,name:'Inferno Lord',icon:'👹',hpMult:2,dmgMult:1.5},
+    {wave:3,name:'Abyssal King',icon:'🔱',hpMult:4,dmgMult:2},
+    {wave:4,name:'Void God',icon:'🌑',hpMult:8,dmgMult:3},
+    {wave:5,name:'CREATOR',icon:'👁️',hpMult:15,dmgMult:4},
+    {wave:6,name:'Death God',icon:'💀',hpMult:30,dmgMult:6},
+    {wave:7,name:'GOD',icon:'✦',hpMult:60,dmgMult:8},
+    {wave:8,name:'THE ANOMALY',icon:'🫠',hpMult:120,dmgMult:12},
+    {wave:9,name:'World Ender',icon:'🌍',hpMult:250,dmgMult:18},
+    {wave:10,name:'INFINITY',icon:'♾️',hpMult:500,dmgMult:25},
+];
+const BOSS_RUSH_BASE_HP=50000;
+const BOSS_RUSH_BASE_DMG=5000;
+const BOSS_RUSH_MILESTONES=[
+    {wave:3,reward:{gold:50000,gems:100,artifactShards:5}},
+    {wave:5,reward:{gold:200000,gems:300,artifactShards:10}},
+    {wave:7,reward:{gold:800000,gems:800,artifactShards:20}},
+    {wave:10,reward:{gold:5000000,gems:3000,artifactShards:50}},
+];
+const BOSS_RUSH_COOLDOWN=600000; // 10 min cooldown
+const BOSS_RUSH_UNLOCK_LEVEL=20;
+
+

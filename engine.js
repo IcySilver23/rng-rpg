@@ -53,6 +53,29 @@ const DEF_STATE={
     towerRewardsClaimed:[],
     seasonalActive:true,
     lastSave:Date.now(),
+    // Artifacts
+    artifactShards:0,
+    ownedArtifacts:{}, // {artifactId: {level:1}}
+    equippedArtifacts:[], // [artifactId, ...] max 1+upgrades
+    artifactSlots:1,
+    // Aura Awakening
+    auraAwakening:{}, // {auraId_mod: tierLevel} e.g. {'ember_glow_null':2}
+    // Battle Pass
+    bpLevel:0,
+    bpXp:0,
+    bpPremium:false,
+    bpClaimedFree:[], // [1,2,3...]
+    bpClaimedPremium:[], // [1,2,3...]
+    bpDailyChallenges:[], // [{id,progress,completed}]
+    bpWeeklyChallenges:[], // [{id,progress,completed}]
+    bpDailyReset:0, // timestamp
+    bpWeeklyReset:0, // timestamp
+    bpProgress:{kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0},
+    bpDailyProgress:{kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0},
+    bpWeeklyProgress:{kills:0,rolls:0,gold:0,bosses:0,elites:0,dust:0,tower:0,dungeon:0,crafts:0,shards:0,worldboss:0},
+    // Boss Rush
+    bossRushBest:0,
+    bossRushCd:0,
 };
 let S=null;
 let autoRoll=null,autoFight=null,rollCdUntil=0;
@@ -135,10 +158,13 @@ function auraBonus(type){
     for(const eq of S.equippedAuras){
         const a=AURAS.find(x=>x.id===eq.id)||(S.hybrids&&S.hybrids[eq.id]);
         if(!a)continue;
+        // Awakening multiplier
+        const awkTier=S.auraAwakening?S.auraAwakening[`${eq.id}_${eq.mod||'null'}`]||0:0;
+        const awkMult=AWAKENING_TIERS[awkTier].abilityMult;
         if(a.ability.type==='hybrid'&&a.ability.abilities){
-            for(const ab of a.ability.abilities){if(ab.type===type||ab.type==='all')t+=ab.value;}
+            for(const ab of a.ability.abilities){if(ab.type===type||ab.type==='all')t+=ab.value*awkMult;}
         } else {
-            if(a.ability.type===type||a.ability.type==='all')t+=a.ability.value;
+            if(a.ability.type===type||a.ability.type==='all')t+=a.ability.value*awkMult;
         }
     }
     return t;
@@ -159,6 +185,9 @@ function getEquippedPower(){
         const a=AURAS.find(x=>x.id===eq.id)||(S.hybrids&&S.hybrids[eq.id]);if(!a)continue;
         let pw=getRarity(a.rarity).power;
         if(eq.mod){const m=MODIFIERS.find(x=>x.id===eq.mod);if(m)pw*=m.pMult;}
+        // Awakening power multiplier
+        const awkTier=S.auraAwakening?S.auraAwakening[`${eq.id}_${eq.mod||'null'}`]||0:0;
+        pw*=AWAKENING_TIERS[awkTier].powerMult;
         p+=pw;
     }
     return p;
@@ -185,6 +214,8 @@ function getLuck(){
     if(S.luckyAura&&Date.now()<S.luckyEnd)l*=1.5;
     // Server event
     l*=getEventBonus('luck');
+    // Artifact: Void Lens
+    const luckArt=hasArtifactProc('luckBoost');if(luckArt)l*=(1+luckArt);
     return l;
 }
 function getPlayerDmg(){
@@ -223,6 +254,8 @@ function getGoldMult(){
     for(const gId of S.equippedGear)m*=(1+getEnchantStat(gId,'gold'));
     if(S.equippedAuras[0]?.mod){const mod=MODIFIERS.find(x=>x.id===S.equippedAuras[0].mod);if(mod)m*=mod.gMult;}
     m*=getEventBonus('gold');
+    // Artifact: Golden Hour
+    const goldArt=hasArtifactProc('goldMult');if(goldArt)m*=(1+goldArt);
     return m;
 }
 function getXpMult(){
@@ -236,7 +269,7 @@ function getGearDrop(){return (1+uLvl('gear_luck')*0.08)*getEventBonus('gearDrop
 function getDoubleRoll(){return uLvl('double_roll')*0.015;}
 function getModMult(){return (1+uLvl('mod_luck')*0.08)*getEventBonus('modChance');}
 function getEggSpd(){return (1+uLvl('egg_speed')*0.1+petBonus('all')*0.3)*getEventBonus('eggSpeed');}
-function getRollSpd(){return 1+uLvl('roll_speed')*0.1+petBonus('speed')+auraBonus('speed')+potionBonus('speed');}
+function getRollSpd(){return (1+uLvl('roll_speed')*0.1+petBonus('speed')+auraBonus('speed')+potionBonus('speed'))*(1+hasArtifactProc('rollSpeedBoost'));}
 function getAutoMs(){const baseSpeed=getRollSpd();const autoLvl=uLvl('auto_roll');const autoMult=1+autoLvl*0.3;return Math.max(80,1500/(baseSpeed*autoMult));}
 function getCdMs(){return Math.max(200,1500/getRollSpd());}
 function getPityMax(){return Math.max(20,100-S.rebirths*5);}

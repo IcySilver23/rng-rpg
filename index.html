@@ -38,6 +38,7 @@
             <div class="resource"><span class="res-icon">💎</span><span class="res-amount" data-res="gems">0</span></div>
             <div class="resource"><span class="res-icon">✨</span><span class="res-amount" data-res="dust">0</span></div>
             <div class="resource"><span class="res-icon">🍀</span><span class="res-amount" data-res="luck">1.0x</span></div>
+            <div class="resource"><span class="res-icon">🏺</span><span class="res-amount" data-res="shards">0</span></div>
         </div>
         <button class="settings-btn" id="btn-open-settings">⚙️</button>
     </header>
@@ -131,6 +132,7 @@
                 <button class="sub-tab" data-subtab="tower">🗼 Tower</button>
                 <button class="sub-tab" data-subtab="dungeon">🏰 Dungeon</button>
                 <button class="sub-tab" data-subtab="worldboss">👹 World Boss</button>
+                <button class="sub-tab" data-subtab="bossrush">🏆 Boss Rush</button>
             </div>
             <!-- Combat -->
             <div class="sub-panel active" id="subpanel-combat">
@@ -156,8 +158,23 @@
             <!-- Tower -->
             <div class="sub-panel" id="subpanel-tower">
                 <div class="tower-info" id="tower-info"></div>
-                <div class="tower-enemy" id="tower-enemy"></div>
-                <button class="btn-fight" id="btn-tower-fight">⚔️ Challenge</button>
+                <div id="tower-battle" style="display:none">
+                    <div id="tower-enemy-display"></div>
+                    <div class="enemy-hp-bar"><div class="enemy-hp-fill" id="tower-hp-fill"></div></div>
+                    <div id="tower-hp-text" style="font-size:.68rem;color:var(--dim)"></div>
+                    <div style="margin-top:6px;font-size:.72rem">❤️ Your HP</div>
+                    <div class="player-hp-bar"><div class="player-hp-fill" id="tower-player-hp-fill"></div></div>
+                    <div id="tower-player-hp-text" style="font-size:.65rem;color:var(--dim)"></div>
+                    <div style="display:flex;gap:6px;margin-top:8px">
+                        <button class="btn-fight" id="btn-tower-attack">⚔️ Attack</button>
+                        <button class="btn-fight btn-auto-fight" id="btn-tower-auto">⚡ Auto</button>
+                    </div>
+                    <div class="combat-log" id="tower-log" style="max-height:80px;margin-top:6px"></div>
+                </div>
+                <div id="tower-idle">
+                    <div id="tower-enemy-preview"></div>
+                    <button class="btn-fight" id="btn-tower-fight">⚔️ Challenge</button>
+                </div>
             </div>
             <!-- Dungeon -->
             <div class="sub-panel" id="subpanel-dungeon">
@@ -185,6 +202,10 @@
                     <div class="wb-milestones" id="wb-milestones"></div>
                     <div class="wb-log" id="wb-log"></div>
                 </div>
+            </div>
+            <!-- Boss Rush -->
+            <div class="sub-panel" id="subpanel-bossrush">
+                <div id="boss-rush-content"></div>
             </div>
         </section>
 
@@ -239,6 +260,8 @@
         <section class="panel" id="panel-workshop">
             <div class="sub-tabs">
                 <button class="sub-tab active" data-subtab="enchanting">🔮 Enchant</button>
+                <button class="sub-tab" data-subtab="artifacts">🏺 Artifacts</button>
+                <button class="sub-tab" data-subtab="awakening">⭐ Awaken</button>
                 <button class="sub-tab" data-subtab="crafting">⚒️ Craft</button>
                 <button class="sub-tab" data-subtab="selling">💰 Sell</button>
                 <button class="sub-tab" data-subtab="petlevel">🐾 Pet Level</button>
@@ -257,6 +280,33 @@
                     <div class="enchant-buttons"><button class="btn-sm" id="btn-enchant">🔮 Enchant</button><button class="btn-sm" id="btn-enchant-stone">🔮 Stone</button><button class="btn-sm" id="btn-reroll">🔄 Reroll</button><button class="btn-sm btn-danger" id="btn-clear-enchants">🗑️ Clear</button></div>
                     <div class="enchant-log" id="enchant-log"></div>
                 </div>
+            </div>
+            <div class="sub-panel" id="subpanel-artifacts">
+                <div style="padding:8px;background:var(--bg2);border-radius:var(--rs);margin-bottom:12px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <h4>🏺 Artifacts</h4>
+                        <span style="font-size:.75rem;color:var(--glow)">Shards: <strong id="artifact-shard-count">0</strong> | Slots: <strong id="artifact-slot-display">0/1</strong></span>
+                    </div>
+                    <p style="font-size:.7rem;color:var(--sub)">Craft artifacts from shards (dropped by bosses, world bosses, and dungeons). Equip them for powerful passive effects. Level up with more shards.</p>
+                </div>
+                <h4 style="margin-bottom:6px">Equipped</h4>
+                <div id="artifact-equipped" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+                <h4 style="margin-bottom:6px">Owned</h4>
+                <div id="artifact-owned" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+                <h4 style="margin-bottom:6px">Craft New</h4>
+                <div id="artifact-craft-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px"></div>
+            </div>
+            <div class="sub-panel" id="subpanel-awakening">
+                <div style="padding:8px;background:var(--bg2);border-radius:var(--rs);margin-bottom:12px">
+                    <h4>⭐ Aura Awakening</h4>
+                    <p style="font-size:.7rem;color:var(--sub);margin-top:4px">Feed duplicate auras into your <strong>equipped</strong> auras to awaken them. Each tier multiplies the aura's ability and power.</p>
+                    <div style="font-size:.68rem;color:var(--dim);margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+                        <span>⭐ Awakened: 1.5x (3 dupes + 100✨)</span>
+                        <span>⭐⭐ Enlightened: 2x (5 dupes + 500✨)</span>
+                        <span>⭐⭐⭐ Transcended: 3x (10 dupes + 2K✨)</span>
+                    </div>
+                </div>
+                <div id="awakening-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px"></div>
             </div>
             <div class="sub-panel" id="subpanel-crafting">
                 <div class="craft-header">
@@ -402,6 +452,7 @@
         <section class="panel" id="panel-progress">
             <div class="sub-tabs">
                 <button class="sub-tab active" data-subtab="quests-sub">📜 Quests</button>
+                <button class="sub-tab" data-subtab="battlepass-sub">📋 Pass</button>
                 <button class="sub-tab" data-subtab="achievements-sub">🏅 Achieve</button>
                 <button class="sub-tab" data-subtab="wheel-sub">🎰 Wheel</button>
                 <button class="sub-tab" data-subtab="hall-sub">🏆 Hall</button>
@@ -409,6 +460,25 @@
                 <button class="sub-tab" data-subtab="stats-sub">📊 Stats</button>
             </div>
             <div class="sub-panel active" id="subpanel-quests-sub"><div class="quest-list" id="quest-list"></div></div>
+            <div class="sub-panel" id="subpanel-battlepass-sub">
+                <div style="padding:8px;background:var(--bg2);border-radius:var(--rs);margin-bottom:10px">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <h4>📋 Battle Pass <span id="bp-premium-badge" style="font-size:.65rem;color:#f59e0b;display:none">⭐ PREMIUM</span></h4>
+                        <button class="btn-sm" id="btn-buy-premium" onclick="buyBpPremium()" style="font-size:.6rem;padding:2px 6px;background:linear-gradient(135deg,#f59e0b,#ec4899);color:#fff">⭐ Unlock Premium (500💎)</button>
+                    </div>
+                    <div style="margin-top:6px;display:flex;gap:10px;align-items:center">
+                        <span style="font-size:.8rem;font-weight:700">Lv.<span id="bp-level-display">0</span>/<span id="bp-max-level">30</span></span>
+                        <div style="flex:1;height:10px;background:var(--bg3);border-radius:5px;overflow:hidden"><div id="bp-xp-fill" style="height:100%;background:linear-gradient(90deg,var(--accent),#ec4899);transition:width .3s"></div></div>
+                        <span style="font-size:.68rem;color:var(--dim)" id="bp-xp-text">0/500</span>
+                    </div>
+                </div>
+                <h4 style="margin-bottom:4px">Daily Challenges <span style="font-size:.65rem;color:var(--dim)" id="bp-daily-timer"></span></h4>
+                <div id="bp-daily-challenges" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px"></div>
+                <h4 style="margin-bottom:4px">Weekly Challenges <span style="font-size:.65rem;color:var(--dim)" id="bp-weekly-timer"></span></h4>
+                <div id="bp-weekly-challenges" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px"></div>
+                <h4 style="margin-bottom:6px">Rewards</h4>
+                <div id="bp-rewards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px"></div>
+            </div>
             <div class="sub-panel" id="subpanel-achievements-sub"><div class="achievements-grid" id="achievements-grid"></div></div>
             <div class="sub-panel" id="subpanel-wheel-sub">
                 <div style="text-align:center;padding:16px">
